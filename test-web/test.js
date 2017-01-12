@@ -163,6 +163,7 @@
 	var MAX_MOVE_DISTANCE_SQ = 0.25 * 0.25;
 	var TIME_REMOVE_HANDLES = 3000;
 	var HANDLE_RADIUS = 4;
+	var MOVEMENT_RATIO = 0.5;
 	var ImageHandleKind;
 	(function (ImageHandleKind) {
 	    ImageHandleKind[ImageHandleKind["Stretch"] = 0] = "Stretch";
@@ -249,20 +250,22 @@
 	    var isDraggingNearest = false;
 	    var xh_start = 0;
 	    var yh_start = 0;
+	    var hNearest = null;
 	    var dragEnd = function () { return isDraggingNearest = isMovingProduct = false; };
 	    var dragStart = function (e) {
 	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest;
+	        xh_start = xh;
+	        yh_start = yh;
+	        userHandles.forEach(function (s) {
+	            s.x_start = s.x;
+	            s.y_start = s.y;
+	        });
 	        if (nearest.distanceSq < MAX_DRAG_DISTANCE_SQ) {
 	            isDraggingNearest = true;
+	            hNearest = nearest.handle;
 	        }
 	        else if (nearest.distanceSq < MAX_MOVE_DISTANCE_SQ) {
 	            isMovingProduct = true;
-	            xh_start = xh;
-	            yh_start = yh;
-	            userHandles.forEach(function (s) {
-	                s.x_start = s.x;
-	                s.y_start = s.y;
-	            });
 	        }
 	        if (DEBUG_MOUSE) {
 	            console.log('isDraggingPoint', isDraggingNearest, 'isMovingProduct', isMovingProduct);
@@ -270,32 +273,34 @@
 	            drawHandles(ctx, w, h, [nearest.handle], '#FF0000');
 	        }
 	    };
+	    var timeoutId = -1;
 	    var dragMove = function (e) {
 	        if (!isDraggingNearest && !isMovingProduct) {
 	            return;
 	        }
 	        // Move the nearest handle
-	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest;
+	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh;
 	        if (isDraggingNearest) {
-	            console.log('nearest.distanceSq', nearest.distanceSq, xh, yh, nearest.handle.x, nearest.handle.y);
-	            nearest.handle.x = xh;
-	            nearest.handle.y = yh;
+	            var s = hNearest;
+	            s.x = s.x_start + (xh - xh_start) * MOVEMENT_RATIO;
+	            s.y = s.y_start + (yh - yh_start) * MOVEMENT_RATIO;
 	        }
 	        else if (isMovingProduct) {
 	            userHandles.forEach(function (s) {
-	                s.x = s.x_start + xh - xh_start;
-	                s.y = s.y_start + yh - yh_start;
+	                s.x = s.x_start + (xh - xh_start) * MOVEMENT_RATIO;
+	                s.y = s.y_start + (yh - yh_start) * MOVEMENT_RATIO;
 	            });
 	        }
 	        refresh();
 	        // if (DEBUG_MOUSE) {
 	        drawHandles(ctx, w, h, userHandles, '#0000FF');
 	        if (isDraggingNearest) {
-	            drawHandles(ctx, w, h, [nearest.handle], '#00FF00');
+	            drawHandles(ctx, w, h, [hNearest], '#00FF00');
 	        }
 	        // }
 	        var removeHandles = function () {
-	            setTimeout(function () {
+	            clearTimeout(timeoutId);
+	            timeoutId = setTimeout(function () {
 	                if (isDraggingNearest) {
 	                    removeHandles();
 	                    return;

@@ -8,6 +8,8 @@ const MAX_MOVE_DISTANCE_SQ = 0.25 * 0.25;
 const TIME_REMOVE_HANDLES = 3000;
 const HANDLE_RADIUS = 4;
 
+const MOVEMENT_RATIO = 0.5;
+
 export enum ImageHandleKind {
     Stretch,
     RotateAndScale,
@@ -163,22 +165,25 @@ export function setupUserFitting(options: UserFittingOptions) {
     let isDraggingNearest = false;
     let xh_start = 0;
     let yh_start = 0;
+    let hNearest: ImageHandle = null;
 
     let dragEnd = () => isDraggingNearest = isMovingProduct = false;
     let dragStart = (e: any) => {
         let {xh, yh, nearest} = getHandleInfo(e);
 
+        xh_start = xh;
+        yh_start = yh;
+
+        userHandles.forEach(s => {
+            s.x_start = s.x;
+            s.y_start = s.y;
+        });
+
         if (nearest.distanceSq < MAX_DRAG_DISTANCE_SQ) {
             isDraggingNearest = true;
+            hNearest = nearest.handle;
         } else if (nearest.distanceSq < MAX_MOVE_DISTANCE_SQ) {
             isMovingProduct = true;
-            xh_start = xh;
-            yh_start = yh;
-
-            userHandles.forEach(s => {
-                s.x_start = s.x;
-                s.y_start = s.y;
-            });
         }
 
         if (DEBUG_MOUSE) {
@@ -186,22 +191,24 @@ export function setupUserFitting(options: UserFittingOptions) {
             drawHandles(ctx, w, h, userHandles, '#00FF00');
             drawHandles(ctx, w, h, [nearest.handle], '#FF0000');
         }
-    }
+    };
+
+    let timeoutId = -1;
 
     let dragMove = (e: any) => {
         if (!isDraggingNearest && !isMovingProduct) { return; }
 
         // Move the nearest handle
-        let {xh, yh, nearest} = getHandleInfo(e);
+        let {xh, yh} = getHandleInfo(e);
 
         if (isDraggingNearest) {
-            console.log('nearest.distanceSq', nearest.distanceSq, xh, yh, nearest.handle.x, nearest.handle.y);
-            nearest.handle.x = xh;
-            nearest.handle.y = yh;
+            let s = hNearest;
+            s.x = s.x_start + (xh - xh_start) * MOVEMENT_RATIO;
+            s.y = s.y_start + (yh - yh_start) * MOVEMENT_RATIO;
         } else if (isMovingProduct) {
             userHandles.forEach(s => {
-                s.x = s.x_start + xh - xh_start;
-                s.y = s.y_start + yh - yh_start;
+                s.x = s.x_start + (xh - xh_start) * MOVEMENT_RATIO;
+                s.y = s.y_start + (yh - yh_start) * MOVEMENT_RATIO;
             });
         }
 
@@ -210,12 +217,13 @@ export function setupUserFitting(options: UserFittingOptions) {
         // if (DEBUG_MOUSE) {
         drawHandles(ctx, w, h, userHandles, '#0000FF');
         if (isDraggingNearest) {
-            drawHandles(ctx, w, h, [nearest.handle], '#00FF00');
+            drawHandles(ctx, w, h, [hNearest], '#00FF00');
         }
         // }
 
         let removeHandles = () => {
-            setTimeout(() => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
                 if (isDraggingNearest) { removeHandles(); return; }
                 refresh();
             }, TIME_REMOVE_HANDLES);
