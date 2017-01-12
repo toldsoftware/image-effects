@@ -1,14 +1,23 @@
 import { drawTriangle } from './draw-triangle';
 
 const DEBUG = false;
+const DEBUG_MOUSE = false;
+
+const MAX_DRAG_DISTANCE_SQ = 0.05 * 0.05;
+const MAX_MOVE_DISTANCE_SQ = 0.25 * 0.25;
+const TIME_REMOVE_HANDLES = 3000;
+const HANDLE_RADIUS = 4;
 
 export enum ImageHandleKind {
     Stretch,
-    Move,
+    RotateAndScale,
+    Anchor,
 }
 export interface ImageHandle {
     x: number;
     y: number;
+    x_start?: number;
+    y_start?: number;
     kind?: ImageHandleKind;
 }
 export interface ImageHandles {
@@ -60,14 +69,14 @@ export function setupUserFitting(options: UserFittingOptions) {
     let w = cvs.width;
     let h = cvs.height;
 
-    // Oversize to be able to see better
-    if (DEBUG) {
-        cvs.width = 1200;
-        cvs.height = 800;
+    // // Oversize to be able to see better
+    // if (DEBUG) {
+    //     cvs.width = 1200;
+    //     cvs.height = 800;
 
-        w = 600;
-        h = 600;
-    }
+    //     w = 600;
+    //     h = 600;
+    // }
 
     let ctx = cvs.getContext('2d');
 
@@ -119,7 +128,111 @@ export function setupUserFitting(options: UserFittingOptions) {
 
     setTimeout(refresh);
 
-    cvs.onmousemove = () => refresh();
+    let userHandles: ImageHandle[] = [];
+
+    for (let k in options.userImageHandles) {
+        userHandles.push(options.userImageHandles[k]);
+    }
+
+    let getHandleInfo = (e: any) => {
+
+        let rect = cvs.getBoundingClientRect();
+        let xm = 0;
+        let ym = 0;
+
+        if (e.clientX != null) {
+            xm = e.clientX - rect.left;
+            ym = e.clientY - rect.top;
+        } else if (e.touches != null) {
+            xm = e.touches[0].clientX - rect.left;
+            ym = e.touches[0].clientY - rect.top;
+        }
+
+        if (DEBUG_MOUSE) {
+            console.log('Mouse Down', xm, ym, e);
+        }
+        let xh = xm / w;
+        let yh = ym / h;
+        let nearest = userHandles.map(s => ({ handle: s, distanceSq: (s.x - xh) * (s.x - xh) + (s.y - yh) * (s.y - yh) })).sort((a, b) => a.distanceSq - b.distanceSq)[0];
+
+        return { xh, yh, nearest };
+    };
+
+
+    let isMovingProduct = false;
+    let isDraggingNearest = false;
+    let xh_start = 0;
+    let yh_start = 0;
+
+    let dragEnd = () => isDraggingNearest = isMovingProduct = false;
+    let dragStart = (e: any) => {
+        let {xh, yh, nearest} = getHandleInfo(e);
+
+        if (nearest.distanceSq < MAX_DRAG_DISTANCE_SQ) {
+            isDraggingNearest = true;
+        } else if (nearest.distanceSq < MAX_MOVE_DISTANCE_SQ) {
+            isMovingProduct = true;
+            xh_start = xh;
+            yh_start = yh;
+
+            userHandles.forEach(s => {
+                s.x_start = s.x;
+                s.y_start = s.y;
+            });
+        }
+
+        if (DEBUG_MOUSE) {
+            console.log('isDraggingPoint', isDraggingNearest, 'isMovingProduct', isMovingProduct);
+            drawHandles(ctx, w, h, userHandles, '#00FF00');
+            drawHandles(ctx, w, h, [nearest.handle], '#FF0000');
+        }
+    }
+
+    let dragMove = (e: any) => {
+        if (!isDraggingNearest && !isMovingProduct) { return; }
+
+        // Move the nearest handle
+        let {xh, yh, nearest} = getHandleInfo(e);
+
+        if (isDraggingNearest) {
+            console.log('nearest.distanceSq', nearest.distanceSq, xh, yh, nearest.handle.x, nearest.handle.y);
+            nearest.handle.x = xh;
+            nearest.handle.y = yh;
+        } else if (isMovingProduct) {
+            userHandles.forEach(s => {
+                s.x = s.x_start + xh - xh_start;
+                s.y = s.y_start + yh - yh_start;
+            });
+        }
+
+        refresh();
+
+        // if (DEBUG_MOUSE) {
+        drawHandles(ctx, w, h, userHandles, '#0000FF');
+        if (isDraggingNearest) {
+            drawHandles(ctx, w, h, [nearest.handle], '#00FF00');
+        }
+        // }
+
+        let removeHandles = () => {
+            setTimeout(() => {
+                if (isDraggingNearest) { removeHandles(); return; }
+                refresh();
+            }, TIME_REMOVE_HANDLES);
+        };
+
+        removeHandles();
+
+        e.preventDefault();
+        return false;
+    };
+
+    cvs.addEventListener('mousedown', dragStart);
+    cvs.addEventListener('touchstart', dragStart);
+    window.addEventListener('mouseup', dragEnd);
+    window.addEventListener('touchend', dragEnd);
+    window.addEventListener('mousemove', dragMove);
+    window.addEventListener('touchmove', dragMove);
 }
 
 function log(message: any, ...args: any[]) {
@@ -150,7 +263,7 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
     handlesMerged = handlesMerged.sort((a, b) => a.source.x - b.source.x);
 
     // Just do a row of cells for now (only vertical dividers)
-    let handles_stretches = handlesMerged.filter(x => x.source.kind !== ImageHandleKind.Move);
+    let handles_stretches = handlesMerged.filter(x => x.source.kind !== ImageHandleKind.Anchor);
 
     let gaps = handles_stretches.map((s, i) => ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }));
     gaps.sort((a, b) => b.xDistance - a.xDistance);
@@ -373,20 +486,25 @@ function calculateSkewY(sx0: number, sx1: number, sy0: number, sy1: number, ty0:
     return (dty - dsy) / dsx;
 }
 
-function drawHandles(ctx: CanvasRenderingContext2D, w: number, h: number, handles: ImageHandles, color: string) {
-    const len = 10;
+function drawHandles(ctx: CanvasRenderingContext2D, w: number, h: number, handles: ImageHandles | ImageHandle[], color: string) {
+
+    let radius = HANDLE_RADIUS;
     for (let k in handles) {
         log('draw handle');
 
-        let handle = handles[k];
+        let handle = (handles as any)[k];
         ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = color;
-        ctx.moveTo(handle.x * w - len, handle.y * h);
-        ctx.lineTo(handle.x * w + len, handle.y * h);
-        ctx.moveTo(handle.x * w, handle.y * h - len);
-        ctx.lineTo(handle.x * w, handle.y * h + len);
-        ctx.stroke();
+        // ctx.lineWidth = 1;
+        // ctx.strokeStyle = color;
+        // ctx.moveTo(handle.x * w - len, handle.y * h);
+        // ctx.lineTo(handle.x * w + len, handle.y * h);
+        // ctx.moveTo(handle.x * w, handle.y * h - len);
+        // ctx.lineTo(handle.x * w, handle.y * h + len);
+        // ctx.stroke();
+
+        ctx.fillStyle = color;
+        ctx.arc(handle.x * w, handle.y * h, radius, 0, Math.PI * 2, false);
+        ctx.fill();
     }
 
 

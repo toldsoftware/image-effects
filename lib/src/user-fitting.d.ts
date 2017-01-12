@@ -1,10 +1,13 @@
 export declare enum ImageHandleKind {
     Stretch = 0,
-    Move = 1,
+    RotateAndScale = 1,
+    Anchor = 2,
 }
 export interface ImageHandle {
     x: number;
     y: number;
+    x_start?: number;
+    y_start?: number;
     kind?: ImageHandleKind;
 }
 export interface ImageHandles {

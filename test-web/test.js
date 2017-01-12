@@ -48,23 +48,26 @@
 	var S = __webpack_require__(1);
 	function test() {
 	    console.log('test START');
-	    addTest(0, 0);
-	    addTest(0, 1);
-	    addTest(0, 2);
-	    addTest(1, 0);
-	    addTest(1, 1);
-	    addTest(1, 2);
+	    var p0 = getProduct(0);
+	    var p1 = getProduct(1);
+	    var u0 = getUser(0);
+	    var u1 = getUser(1);
+	    var u2 = getUser(2);
+	    addTest(p0, u0);
+	    addTest(p0, u1);
+	    addTest(p0, u2);
+	    addTest(p1, u0);
+	    addTest(p1, u1);
+	    addTest(p1, u2);
 	    console.log('test END');
 	}
 	exports.test = test;
-	function addTest(p, u) {
+	function addTest(product, user) {
 	    var host = document.createElement('div');
 	    document.body.appendChild(host);
 	    host.style.width = '300px';
 	    host.style.height = '300px';
 	    host.style.display = 'inline-block';
-	    var product = getProduct(p);
-	    var user = getUser(u);
 	    S.setupUserFitting({
 	        host: host,
 	        userImageUrl: user.userImageUrl,
@@ -78,9 +81,9 @@
 	        return {
 	            productImageUrl: '/productImage.png',
 	            productImageHandles: {
-	                center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Move },
-	                left_temple: { x: 58 / 600, y: 246 / 600 },
-	                right_temple: { x: 544 / 600, y: 248 / 600 },
+	                center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Anchor },
+	                left_temple: { x: 58 / 600, y: 246 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 544 / 600, y: 248 / 600, kind: S.ImageHandleKind.RotateAndScale },
 	                left_earpiece: { x: 18 / 600, y: 280 / 600 },
 	                right_earpiece: { x: 583 / 600, y: 304 / 600 },
 	            },
@@ -90,9 +93,9 @@
 	        return {
 	            productImageUrl: '/productImage02.png',
 	            productImageHandles: {
-	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Move },
-	                left_temple: { x: 58 / 600, y: 243 / 600 },
-	                right_temple: { x: 546 / 600, y: 251 / 600 },
+	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
 	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
 	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
 	            },
@@ -104,7 +107,6 @@
 	        return {
 	            userImageUrl: '/userImage00.png',
 	            userImageHandles: {
-	                center: { x: 302 / 600, y: 264 / 600, kind: S.ImageHandleKind.Move },
 	                left_temple: { x: 168 / 600, y: 260 / 600 },
 	                right_temple: { x: 438 / 600, y: 260 / 600 },
 	                left_earpiece: { x: 145 / 600, y: 278 / 600 },
@@ -116,7 +118,6 @@
 	        return {
 	            userImageUrl: '/userImage01.png',
 	            userImageHandles: {
-	                center: { x: 97 / 220, y: 78 / 215, kind: S.ImageHandleKind.Move },
 	                left_temple: { x: 62 / 220, y: 78 / 215 },
 	                right_temple: { x: 135 / 220, y: 78 / 215 },
 	                left_earpiece: { x: 59 / 220, y: 83 / 215 },
@@ -128,7 +129,6 @@
 	        return {
 	            userImageUrl: '/userImage02.jpg',
 	            userImageHandles: {
-	                center: { x: 286 / 600, y: 202 / 600, kind: S.ImageHandleKind.Move },
 	                left_temple: { x: 170 / 600, y: 217 / 600 },
 	                right_temple: { x: 406 / 600, y: 184 / 600 },
 	                left_earpiece: { x: 150 / 600, y: 255 / 600 },
@@ -158,10 +158,16 @@
 	"use strict";
 	var draw_triangle_1 = __webpack_require__(3);
 	var DEBUG = false;
+	var DEBUG_MOUSE = false;
+	var MAX_DRAG_DISTANCE_SQ = 0.05 * 0.05;
+	var MAX_MOVE_DISTANCE_SQ = 0.25 * 0.25;
+	var TIME_REMOVE_HANDLES = 3000;
+	var HANDLE_RADIUS = 4;
 	var ImageHandleKind;
 	(function (ImageHandleKind) {
 	    ImageHandleKind[ImageHandleKind["Stretch"] = 0] = "Stretch";
-	    ImageHandleKind[ImageHandleKind["Move"] = 1] = "Move";
+	    ImageHandleKind[ImageHandleKind["RotateAndScale"] = 1] = "RotateAndScale";
+	    ImageHandleKind[ImageHandleKind["Anchor"] = 2] = "Anchor";
 	})(ImageHandleKind = exports.ImageHandleKind || (exports.ImageHandleKind = {}));
 	function setupUserFitting(options) {
 	    var cvs = document.createElement('canvas');
@@ -170,13 +176,13 @@
 	    cvs.height = options.host.clientHeight;
 	    var w = cvs.width;
 	    var h = cvs.height;
-	    // Oversize to be able to see better
-	    if (DEBUG) {
-	        cvs.width = 1200;
-	        cvs.height = 800;
-	        w = 600;
-	        h = 600;
-	    }
+	    // // Oversize to be able to see better
+	    // if (DEBUG) {
+	    //     cvs.width = 1200;
+	    //     cvs.height = 800;
+	    //     w = 600;
+	    //     h = 600;
+	    // }
 	    var ctx = cvs.getContext('2d');
 	    if (DEBUG) {
 	        ctx.strokeStyle = '#000000';
@@ -215,7 +221,98 @@
 	        refreshUserFitting(c, userImage, productImage, options);
 	    };
 	    setTimeout(refresh);
-	    cvs.onmousemove = function () { return refresh(); };
+	    var userHandles = [];
+	    for (var k in options.userImageHandles) {
+	        userHandles.push(options.userImageHandles[k]);
+	    }
+	    var getHandleInfo = function (e) {
+	        var rect = cvs.getBoundingClientRect();
+	        var xm = 0;
+	        var ym = 0;
+	        if (e.clientX != null) {
+	            xm = e.clientX - rect.left;
+	            ym = e.clientY - rect.top;
+	        }
+	        else if (e.touches != null) {
+	            xm = e.touches[0].clientX - rect.left;
+	            ym = e.touches[0].clientY - rect.top;
+	        }
+	        if (DEBUG_MOUSE) {
+	            console.log('Mouse Down', xm, ym, e);
+	        }
+	        var xh = xm / w;
+	        var yh = ym / h;
+	        var nearest = userHandles.map(function (s) { return ({ handle: s, distanceSq: (s.x - xh) * (s.x - xh) + (s.y - yh) * (s.y - yh) }); }).sort(function (a, b) { return a.distanceSq - b.distanceSq; })[0];
+	        return { xh: xh, yh: yh, nearest: nearest };
+	    };
+	    var isMovingProduct = false;
+	    var isDraggingNearest = false;
+	    var xh_start = 0;
+	    var yh_start = 0;
+	    var dragEnd = function () { return isDraggingNearest = isMovingProduct = false; };
+	    var dragStart = function (e) {
+	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest;
+	        if (nearest.distanceSq < MAX_DRAG_DISTANCE_SQ) {
+	            isDraggingNearest = true;
+	        }
+	        else if (nearest.distanceSq < MAX_MOVE_DISTANCE_SQ) {
+	            isMovingProduct = true;
+	            xh_start = xh;
+	            yh_start = yh;
+	            userHandles.forEach(function (s) {
+	                s.x_start = s.x;
+	                s.y_start = s.y;
+	            });
+	        }
+	        if (DEBUG_MOUSE) {
+	            console.log('isDraggingPoint', isDraggingNearest, 'isMovingProduct', isMovingProduct);
+	            drawHandles(ctx, w, h, userHandles, '#00FF00');
+	            drawHandles(ctx, w, h, [nearest.handle], '#FF0000');
+	        }
+	    };
+	    var dragMove = function (e) {
+	        if (!isDraggingNearest && !isMovingProduct) {
+	            return;
+	        }
+	        // Move the nearest handle
+	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest;
+	        if (isDraggingNearest) {
+	            console.log('nearest.distanceSq', nearest.distanceSq, xh, yh, nearest.handle.x, nearest.handle.y);
+	            nearest.handle.x = xh;
+	            nearest.handle.y = yh;
+	        }
+	        else if (isMovingProduct) {
+	            userHandles.forEach(function (s) {
+	                s.x = s.x_start + xh - xh_start;
+	                s.y = s.y_start + yh - yh_start;
+	            });
+	        }
+	        refresh();
+	        // if (DEBUG_MOUSE) {
+	        drawHandles(ctx, w, h, userHandles, '#0000FF');
+	        if (isDraggingNearest) {
+	            drawHandles(ctx, w, h, [nearest.handle], '#00FF00');
+	        }
+	        // }
+	        var removeHandles = function () {
+	            setTimeout(function () {
+	                if (isDraggingNearest) {
+	                    removeHandles();
+	                    return;
+	                }
+	                refresh();
+	            }, TIME_REMOVE_HANDLES);
+	        };
+	        removeHandles();
+	        e.preventDefault();
+	        return false;
+	    };
+	    cvs.addEventListener('mousedown', dragStart);
+	    cvs.addEventListener('touchstart', dragStart);
+	    window.addEventListener('mouseup', dragEnd);
+	    window.addEventListener('touchend', dragEnd);
+	    window.addEventListener('mousemove', dragMove);
+	    window.addEventListener('touchmove', dragMove);
 	}
 	exports.setupUserFitting = setupUserFitting;
 	function log(message) {
@@ -242,7 +339,7 @@
 	    }
 	    handlesMerged = handlesMerged.sort(function (a, b) { return a.source.x - b.source.x; });
 	    // Just do a row of cells for now (only vertical dividers)
-	    var handles_stretches = handlesMerged.filter(function (x) { return x.source.kind !== ImageHandleKind.Move; });
+	    var handles_stretches = handlesMerged.filter(function (x) { return x.source.kind !== ImageHandleKind.Anchor; });
 	    var gaps = handles_stretches.map(function (s, i) { return ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }); });
 	    gaps.sort(function (a, b) { return b.xDistance - a.xDistance; });
 	    // log('gaps', gaps);
@@ -392,18 +489,21 @@
 	    return (dty - dsy) / dsx;
 	}
 	function drawHandles(ctx, w, h, handles, color) {
-	    var len = 10;
+	    var radius = HANDLE_RADIUS;
 	    for (var k in handles) {
 	        log('draw handle');
 	        var handle = handles[k];
 	        ctx.beginPath();
-	        ctx.lineWidth = 1;
-	        ctx.strokeStyle = color;
-	        ctx.moveTo(handle.x * w - len, handle.y * h);
-	        ctx.lineTo(handle.x * w + len, handle.y * h);
-	        ctx.moveTo(handle.x * w, handle.y * h - len);
-	        ctx.lineTo(handle.x * w, handle.y * h + len);
-	        ctx.stroke();
+	        // ctx.lineWidth = 1;
+	        // ctx.strokeStyle = color;
+	        // ctx.moveTo(handle.x * w - len, handle.y * h);
+	        // ctx.lineTo(handle.x * w + len, handle.y * h);
+	        // ctx.moveTo(handle.x * w, handle.y * h - len);
+	        // ctx.lineTo(handle.x * w, handle.y * h + len);
+	        // ctx.stroke();
+	        ctx.fillStyle = color;
+	        ctx.arc(handle.x * w, handle.y * h, radius, 0, Math.PI * 2, false);
+	        ctx.fill();
 	    }
 	}
 	function drawImageSection(ctx, image, handle, handleTargets) {
