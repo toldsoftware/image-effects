@@ -1,0 +1,1 @@
+export declare function drawTriangle(ctx: CanvasRenderingContext2D, image: HTMLImageElement, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, sx0: number, sy0: number, sx1: number, sy1: number, sx2: number, sy2: number, wireframe?: boolean): void;
