@@ -48,56 +48,95 @@
 	var S = __webpack_require__(1);
 	function test() {
 	    console.log('test START');
+	    addTest(0, 0);
+	    addTest(0, 1);
+	    addTest(0, 2);
+	    addTest(1, 0);
+	    addTest(1, 1);
+	    addTest(1, 2);
+	    console.log('test END');
+	}
+	exports.test = test;
+	function addTest(p, u) {
 	    var host = document.createElement('div');
 	    document.body.appendChild(host);
 	    host.style.width = '300px';
 	    host.style.height = '300px';
+	    host.style.display = 'inline-block';
+	    var product = getProduct(p);
+	    var user = getUser(u);
 	    S.setupUserFitting({
 	        host: host,
-	        // productImageUrl: '/productImage.png',
-	        // productImageHandles: {
-	        //     center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Move },
-	        //     left_temple: { x: 58 / 600, y: 246 / 600 },
-	        //     right_temple: { x: 544 / 600, y: 248 / 600 },
-	        //     left_earpiece: { x: 18 / 600, y: 280 / 600 },
-	        //     right_earpiece: { x: 583 / 600, y: 304 / 600 },
-	        // },
-	        productImageUrl: '/productImage02.png',
-	        productImageHandles: {
-	            center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Move },
-	            left_temple: { x: 58 / 600, y: 243 / 600 },
-	            right_temple: { x: 546 / 600, y: 251 / 600 },
-	            left_earpiece: { x: 10 / 600, y: 286 / 600 },
-	            right_earpiece: { x: 595 / 600, y: 294 / 600 },
-	        },
-	        // userImageUrl: '/userImage00.png',
-	        // userImageHandles: {
-	        //     center: { x: 302 / 600, y: 264 / 600, kind: S.ImageHandleKind.Move },
-	        //     left_temple: { x: 168 / 600, y: 260 / 600 },
-	        //     right_temple: { x: 438 / 600, y: 260 / 600 },
-	        //     left_earpiece: { x: 145 / 600, y: 278 / 600 },
-	        //     right_earpiece: { x: 460 / 600, y: 292 / 600 },
-	        // },
-	        // userImageUrl: '/userImage01.png',
-	        // userImageHandles: {
-	        //     center: { x: 97 / 220, y: 78 / 215, kind: S.ImageHandleKind.Move },
-	        //     left_temple: { x: 62 / 220, y: 74 / 215 },
-	        //     right_temple: { x: 133 / 220, y: 74 / 215 },
-	        //     left_earpiece: { x: 59 / 220, y: 83 / 215 },
-	        //     right_earpiece: { x: 138 / 220, y: 78 / 215 },
-	        // },
-	        userImageUrl: '/userImage02.jpg',
-	        userImageHandles: {
-	            center: { x: 286 / 600, y: 202 / 600, kind: S.ImageHandleKind.Move },
-	            left_temple: { x: 170 / 600, y: 217 / 600 },
-	            right_temple: { x: 406 / 600, y: 180 / 600 },
-	            left_earpiece: { x: 150 / 600, y: 255 / 600 },
-	            right_earpiece: { x: 425 / 600, y: 205 / 600 },
-	        },
+	        userImageUrl: user.userImageUrl,
+	        userImageHandles: user.userImageHandles,
+	        productImageUrl: product.productImageUrl,
+	        productImageHandles: product.productImageHandles
 	    });
-	    console.log('test END');
 	}
-	exports.test = test;
+	function getProduct(i) {
+	    if (i === 0) {
+	        return {
+	            productImageUrl: '/productImage.png',
+	            productImageHandles: {
+	                center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Move },
+	                left_temple: { x: 58 / 600, y: 246 / 600 },
+	                right_temple: { x: 544 / 600, y: 248 / 600 },
+	                left_earpiece: { x: 18 / 600, y: 280 / 600 },
+	                right_earpiece: { x: 583 / 600, y: 304 / 600 },
+	            },
+	        };
+	    }
+	    else {
+	        return {
+	            productImageUrl: '/productImage02.png',
+	            productImageHandles: {
+	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Move },
+	                left_temple: { x: 58 / 600, y: 243 / 600 },
+	                right_temple: { x: 546 / 600, y: 251 / 600 },
+	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	            },
+	        };
+	    }
+	}
+	function getUser(i) {
+	    if (i === 0) {
+	        return {
+	            userImageUrl: '/userImage00.png',
+	            userImageHandles: {
+	                center: { x: 302 / 600, y: 264 / 600, kind: S.ImageHandleKind.Move },
+	                left_temple: { x: 168 / 600, y: 260 / 600 },
+	                right_temple: { x: 438 / 600, y: 260 / 600 },
+	                left_earpiece: { x: 145 / 600, y: 278 / 600 },
+	                right_earpiece: { x: 460 / 600, y: 292 / 600 },
+	            },
+	        };
+	    }
+	    else if (i === 1) {
+	        return {
+	            userImageUrl: '/userImage01.png',
+	            userImageHandles: {
+	                center: { x: 97 / 220, y: 78 / 215, kind: S.ImageHandleKind.Move },
+	                left_temple: { x: 62 / 220, y: 78 / 215 },
+	                right_temple: { x: 135 / 220, y: 78 / 215 },
+	                left_earpiece: { x: 59 / 220, y: 83 / 215 },
+	                right_earpiece: { x: 138 / 220, y: 78 / 215 },
+	            },
+	        };
+	    }
+	    else {
+	        return {
+	            userImageUrl: '/userImage02.jpg',
+	            userImageHandles: {
+	                center: { x: 286 / 600, y: 202 / 600, kind: S.ImageHandleKind.Move },
+	                left_temple: { x: 170 / 600, y: 217 / 600 },
+	                right_temple: { x: 406 / 600, y: 184 / 600 },
+	                left_earpiece: { x: 150 / 600, y: 255 / 600 },
+	                right_earpiece: { x: 425 / 600, y: 205 / 600 },
+	            },
+	        };
+	    }
+	}
 	test();
 
 
@@ -127,15 +166,23 @@
 	function setupUserFitting(options) {
 	    var cvs = document.createElement('canvas');
 	    options.host.appendChild(cvs);
+	    cvs.width = options.host.clientWidth;
+	    cvs.height = options.host.clientHeight;
+	    var w = cvs.width;
+	    var h = cvs.height;
 	    // Oversize to be able to see better
-	    cvs.width = 1200;
-	    cvs.height = 800;
-	    var w = 600;
-	    var h = 600;
+	    if (DEBUG) {
+	        cvs.width = 1200;
+	        cvs.height = 800;
+	        w = 600;
+	        h = 600;
+	    }
 	    var ctx = cvs.getContext('2d');
-	    ctx.strokeStyle = '#000000';
-	    ctx.lineWidth = 4;
-	    ctx.strokeRect(0, 0, w, h);
+	    if (DEBUG) {
+	        ctx.strokeStyle = '#000000';
+	        ctx.lineWidth = 4;
+	        ctx.strokeRect(0, 0, w, h);
+	    }
 	    // TODO: Add Image Loader (for iOS)
 	    var userImage = new Image();
 	    userImage.src = options.userImageUrl;
@@ -161,6 +208,10 @@
 	    };
 	    var c = { context: ctx, width: w, height: h };
 	    var refresh = function () {
+	        if (!DEBUG) {
+	            c.width = w = cvs.width;
+	            c.height = h = cvs.height;
+	        }
 	        refreshUserFitting(c, userImage, productImage, options);
 	    };
 	    setTimeout(refresh);

@@ -54,20 +54,28 @@ interface DrawContext {
 export function setupUserFitting(options: UserFittingOptions) {
     let cvs = document.createElement('canvas');
     options.host.appendChild(cvs);
+    cvs.width = options.host.clientWidth;
+    cvs.height = options.host.clientHeight;
+
+    let w = cvs.width;
+    let h = cvs.height;
 
     // Oversize to be able to see better
-    cvs.width = 1200;
-    cvs.height = 800;
+    if (DEBUG) {
+        cvs.width = 1200;
+        cvs.height = 800;
 
-    let w = 600;
-    let h = 600;
+        w = 600;
+        h = 600;
+    }
 
     let ctx = cvs.getContext('2d');
 
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(0, 0, w, h);
-
+    if (DEBUG) {
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(0, 0, w, h);
+    }
     // TODO: Add Image Loader (for iOS)
 
     let userImage = new Image();
@@ -101,7 +109,10 @@ export function setupUserFitting(options: UserFittingOptions) {
     let c = { context: ctx, width: w, height: h };
     let refresh = () => {
 
-
+        if (!DEBUG) {
+            c.width = w = cvs.width;
+            c.height = h = cvs.height;
+        }
 
         refreshUserFitting(c, userImage, productImage, options);
     };
