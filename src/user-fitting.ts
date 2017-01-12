@@ -1,6 +1,6 @@
 import { drawTriangle } from './draw-triangle';
 
-const DEBUG = true;
+const DEBUG = false;
 
 export enum ImageHandleKind {
     Stretch,
@@ -88,10 +88,12 @@ export function setupUserFitting(options: UserFittingOptions) {
     productImage.src = options.productImageUrl;
     productImage.onload = () => {
 
-        // ctx.save();
-        // ctx.globalAlpha = 0.15;
-        // ctx.drawImage(productImage, 0, 0);
-        // ctx.restore();
+        if (DEBUG) {
+            ctx.save();
+            ctx.globalAlpha = 0.15;
+            ctx.drawImage(productImage, 0, 0);
+            ctx.restore();
+        }
 
         refresh();
     };
@@ -109,9 +111,15 @@ export function setupUserFitting(options: UserFittingOptions) {
     cvs.onmousemove = () => refresh();
 }
 
+function log(message: any, ...args: any[]) {
+    if (DEBUG) {
+        console.log(message, ...args);
+    }
+}
+
 
 function refreshUserFitting(c: DrawContext, userImage: HTMLImageElement, productImage: HTMLImageElement, options: UserFittingOptions) {
-    console.log('refresh');
+    log('refresh');
 
     drawImage(c, userImage, options.userImageHandles, options.userImageHandles);
     drawImage(c, productImage, options.productImageHandles, options.userImageHandles);
@@ -135,7 +143,7 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
 
     let gaps = handles_stretches.map((s, i) => ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }));
     gaps.sort((a, b) => b.xDistance - a.xDistance);
-    // console.log('gaps', gaps);
+    // log('gaps', gaps);
 
     let widest = gaps[0];
 
@@ -152,7 +160,10 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
     let targetAngle = Math.atan(y_delta_target / x_delta_target);
     let mainAngle = targetAngle - sourceAngle;
 
-    console.log('targetScale', targetScale,
+    // TEMP: Testing
+    // mainAngle = 0;
+
+    log('targetScale', targetScale,
         'y_delta_source', y_delta_source,
         'x_delta_source', x_delta_source,
         'y_delta_target', y_delta_target,
@@ -219,7 +230,7 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
         }
 
         if (i === columnCount - 1) {
-            let changeRatio = (1 - sourceRight) / (sourceRight - sourceLeft);
+            let changeRatio = (1 - sourceLeft) / (sourceRight - sourceLeft);
             let tScale = (targetRight - targetLeft) / (sourceRight - sourceLeft);
             targetRight = targetLeft + tScale * (1 - sourceLeft);
             sourceRight = 1;
@@ -237,8 +248,8 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
 
         let g = grid[grid.length - 1][0];
 
-        console.log('Source:', g.source);
-        console.log('Target:', g.target);
+        log('Source:', g.source);
+        log('Target:', g.target);
 
 
         // drawTriangle(ctx, image,
@@ -301,7 +312,7 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
     if (DEBUG) {
 
         stretches.forEach(s => {
-            console.log('draw stretch', s);
+            log('draw stretch', s);
             ctx.beginPath();
             ctx.strokeStyle = '#FF00FF';
             ctx.moveTo(w * s.target_orig.x, h * s.target_orig.y);
@@ -354,7 +365,7 @@ function calculateSkewY(sx0: number, sx1: number, sy0: number, sy1: number, ty0:
 function drawHandles(ctx: CanvasRenderingContext2D, w: number, h: number, handles: ImageHandles, color: string) {
     const len = 10;
     for (let k in handles) {
-        console.log('draw handle');
+        log('draw handle');
 
         let handle = handles[k];
         ctx.beginPath();

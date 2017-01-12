@@ -10,13 +10,21 @@ export function test() {
 
     S.setupUserFitting({
         host: host,
-        productImageUrl: '/productImage.png',
+        // productImageUrl: '/productImage.png',
+        // productImageHandles: {
+        //     center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Move },
+        //     left_temple: { x: 58 / 600, y: 246 / 600 },
+        //     right_temple: { x: 544 / 600, y: 248 / 600 },
+        //     left_earpiece: { x: 18 / 600, y: 280 / 600 },
+        //     right_earpiece: { x: 583 / 600, y: 304 / 600 },
+        // },
+        productImageUrl: '/productImage02.png',
         productImageHandles: {
-            center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Move },
-            left_temple: { x: 58 / 600, y: 246 / 600 },
-            right_temple: { x: 544 / 600, y: 248 / 600 },
-            left_earpiece: { x: 18 / 600, y: 280 / 600 },
-            right_earpiece: { x: 583 / 600, y: 304 / 600 },
+            center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Move },
+            left_temple: { x: 58 / 600, y: 243 / 600 },
+            right_temple: { x: 546 / 600, y: 251 / 600 },
+            left_earpiece: { x: 10 / 600, y: 286 / 600 },
+            right_earpiece: { x: 595 / 600, y: 294 / 600 },
         },
         // userImageUrl: '/userImage00.png',
         // userImageHandles: {
@@ -37,8 +45,8 @@ export function test() {
         userImageUrl: '/userImage02.jpg',
         userImageHandles: {
             center: { x: 286 / 600, y: 202 / 600, kind: S.ImageHandleKind.Move },
-            left_temple: { x: 166 / 600, y: 217 / 600 },
-            right_temple: { x: 400 / 600, y: 175 / 600 },
+            left_temple: { x: 170 / 600, y: 217 / 600 },
+            right_temple: { x: 406 / 600, y: 180 / 600 },
             left_earpiece: { x: 150 / 600, y: 255 / 600 },
             right_earpiece: { x: 425 / 600, y: 205 / 600 },
         },

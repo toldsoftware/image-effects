@@ -54,13 +54,21 @@
 	    host.style.height = '300px';
 	    S.setupUserFitting({
 	        host: host,
-	        productImageUrl: '/productImage.png',
+	        // productImageUrl: '/productImage.png',
+	        // productImageHandles: {
+	        //     center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Move },
+	        //     left_temple: { x: 58 / 600, y: 246 / 600 },
+	        //     right_temple: { x: 544 / 600, y: 248 / 600 },
+	        //     left_earpiece: { x: 18 / 600, y: 280 / 600 },
+	        //     right_earpiece: { x: 583 / 600, y: 304 / 600 },
+	        // },
+	        productImageUrl: '/productImage02.png',
 	        productImageHandles: {
-	            center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Move },
-	            left_temple: { x: 58 / 600, y: 246 / 600 },
-	            right_temple: { x: 544 / 600, y: 248 / 600 },
-	            left_earpiece: { x: 18 / 600, y: 280 / 600 },
-	            right_earpiece: { x: 583 / 600, y: 304 / 600 },
+	            center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Move },
+	            left_temple: { x: 58 / 600, y: 243 / 600 },
+	            right_temple: { x: 546 / 600, y: 251 / 600 },
+	            left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	            right_earpiece: { x: 595 / 600, y: 294 / 600 },
 	        },
 	        // userImageUrl: '/userImage00.png',
 	        // userImageHandles: {
@@ -81,8 +89,8 @@
 	        userImageUrl: '/userImage02.jpg',
 	        userImageHandles: {
 	            center: { x: 286 / 600, y: 202 / 600, kind: S.ImageHandleKind.Move },
-	            left_temple: { x: 166 / 600, y: 217 / 600 },
-	            right_temple: { x: 400 / 600, y: 175 / 600 },
+	            left_temple: { x: 170 / 600, y: 217 / 600 },
+	            right_temple: { x: 406 / 600, y: 180 / 600 },
 	            left_earpiece: { x: 150 / 600, y: 255 / 600 },
 	            right_earpiece: { x: 425 / 600, y: 205 / 600 },
 	        },
@@ -110,7 +118,7 @@
 
 	"use strict";
 	var draw_triangle_1 = __webpack_require__(3);
-	var DEBUG = true;
+	var DEBUG = false;
 	var ImageHandleKind;
 	(function (ImageHandleKind) {
 	    ImageHandleKind[ImageHandleKind["Stretch"] = 0] = "Stretch";
@@ -143,10 +151,12 @@
 	    var productImage = new Image();
 	    productImage.src = options.productImageUrl;
 	    productImage.onload = function () {
-	        // ctx.save();
-	        // ctx.globalAlpha = 0.15;
-	        // ctx.drawImage(productImage, 0, 0);
-	        // ctx.restore();
+	        if (DEBUG) {
+	            ctx.save();
+	            ctx.globalAlpha = 0.15;
+	            ctx.drawImage(productImage, 0, 0);
+	            ctx.restore();
+	        }
 	        refresh();
 	    };
 	    var c = { context: ctx, width: w, height: h };
@@ -157,8 +167,17 @@
 	    cvs.onmousemove = function () { return refresh(); };
 	}
 	exports.setupUserFitting = setupUserFitting;
+	function log(message) {
+	    var args = [];
+	    for (var _i = 1; _i < arguments.length; _i++) {
+	        args[_i - 1] = arguments[_i];
+	    }
+	    if (DEBUG) {
+	        console.log.apply(console, [message].concat(args));
+	    }
+	}
 	function refreshUserFitting(c, userImage, productImage, options) {
-	    console.log('refresh');
+	    log('refresh');
 	    drawImage(c, userImage, options.userImageHandles, options.userImageHandles);
 	    drawImage(c, productImage, options.productImageHandles, options.userImageHandles);
 	}
@@ -175,7 +194,7 @@
 	    var handles_stretches = handlesMerged.filter(function (x) { return x.source.kind !== ImageHandleKind.Move; });
 	    var gaps = handles_stretches.map(function (s, i) { return ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }); });
 	    gaps.sort(function (a, b) { return b.xDistance - a.xDistance; });
-	    // console.log('gaps', gaps);
+	    // log('gaps', gaps);
 	    var widest = gaps[0];
 	    var targetScale = (widest.next.target.x - widest.prev.target.x) /
 	        (widest.next.source.x - widest.prev.source.x);
@@ -186,7 +205,9 @@
 	    var sourceAngle = Math.atan(y_delta_source / x_delta_source);
 	    var targetAngle = Math.atan(y_delta_target / x_delta_target);
 	    var mainAngle = targetAngle - sourceAngle;
-	    console.log('targetScale', targetScale, 'y_delta_source', y_delta_source, 'x_delta_source', x_delta_source, 'y_delta_target', y_delta_target, 'x_delta_target', x_delta_target, 'sourceAngle', sourceAngle * 180 / Math.PI, 'targetAngle', targetAngle * 180 / Math.PI, 'mainAngle', mainAngle * 180 / Math.PI);
+	    // TEMP: Testing
+	    // mainAngle = 0;
+	    log('targetScale', targetScale, 'y_delta_source', y_delta_source, 'x_delta_source', x_delta_source, 'y_delta_target', y_delta_target, 'x_delta_target', x_delta_target, 'sourceAngle', sourceAngle * 180 / Math.PI, 'targetAngle', targetAngle * 180 / Math.PI, 'mainAngle', mainAngle * 180 / Math.PI);
 	    ctx.save();
 	    ctx.rotate(mainAngle);
 	    // Calculate y_top and y_bottom for each stretch handle
@@ -228,7 +249,7 @@
 	            target_bottom_left = target_bottom_right - changeRatio * (target_bottom_right - target_bottom_left);
 	        }
 	        if (i === columnCount - 1) {
-	            var changeRatio = (1 - sourceRight) / (sourceRight - sourceLeft);
+	            var changeRatio = (1 - sourceLeft) / (sourceRight - sourceLeft);
 	            var tScale = (targetRight - targetLeft) / (sourceRight - sourceLeft);
 	            targetRight = targetLeft + tScale * (1 - sourceLeft);
 	            sourceRight = 1;
@@ -240,8 +261,8 @@
 	                target: { x_left: targetLeft, x_right: targetRight, y_top_left: target_top_left, y_bottom_left: target_bottom_left, y_top_right: target_top_right, y_bottom_right: target_bottom_right }
 	            }]);
 	        var g = grid[grid.length - 1][0];
-	        console.log('Source:', g.source);
-	        console.log('Target:', g.target);
+	        log('Source:', g.source);
+	        log('Target:', g.target);
 	        // drawTriangle(ctx, image,
 	        //     w * g.source.x_left, h * g.source.y_top,
 	        //     w * g.source.x_right, h * g.source.y_top,
@@ -279,7 +300,7 @@
 	    }
 	    if (DEBUG) {
 	        stretches.forEach(function (s) {
-	            console.log('draw stretch', s);
+	            log('draw stretch', s);
 	            ctx.beginPath();
 	            ctx.strokeStyle = '#FF00FF';
 	            ctx.moveTo(w * s.target_orig.x, h * s.target_orig.y);
@@ -322,7 +343,7 @@
 	function drawHandles(ctx, w, h, handles, color) {
 	    var len = 10;
 	    for (var k in handles) {
-	        console.log('draw handle');
+	        log('draw handle');
 	        var handle = handles[k];
 	        ctx.beginPath();
 	        ctx.lineWidth = 1;
@@ -365,8 +386,8 @@
 	        ctx.stroke();
 	        ctx.closePath();
 	    }
-	    console.log("Target: (" + x0 + "," + y0 + ")-(" + x1 + "," + y1 + ")-(" + x2 + "," + y2 + ")");
-	    console.log("Source: (" + sx0 + "," + sy0 + ")-(" + sx1 + "," + sy1 + ")-(" + sx2 + "," + sy2 + ")");
+	    // console.log(`Target: (${x0},${y0})-(${x1},${y1})-(${x2},${y2})`);
+	    // console.log(`Source: (${sx0},${sy0})-(${sx1},${sy1})-(${sx2},${sy2})`);
 	    ctx.save();
 	    // Clip the output to the on-screen triangle boundaries.
 	    ctx.beginPath();

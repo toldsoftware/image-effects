@@ -37,8 +37,8 @@ export function drawTriangle(
         ctx.closePath();
     }
 
-    console.log(`Target: (${x0},${y0})-(${x1},${y1})-(${x2},${y2})`);
-    console.log(`Source: (${sx0},${sy0})-(${sx1},${sy1})-(${sx2},${sy2})`);
+    // console.log(`Target: (${x0},${y0})-(${x1},${y1})-(${x2},${y2})`);
+    // console.log(`Source: (${sx0},${sy0})-(${sx1},${sy1})-(${sx2},${sy2})`);
 
     ctx.save();
 
