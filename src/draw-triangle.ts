@@ -14,7 +14,7 @@ export function drawTriangle(
     sy1: number,
     sx2: number,
     sy2: number,
-    wireframe = true
+    wireframe = false
 ) {
     if (wireframe) {
         ctx.lineWidth = 0.5;

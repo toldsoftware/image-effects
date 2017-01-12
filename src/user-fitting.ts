@@ -1,5 +1,7 @@
 import { drawTriangle } from './draw-triangle';
 
+const DEBUG = true;
+
 export enum ImageHandleKind {
     Stretch,
     Move,
@@ -86,10 +88,10 @@ export function setupUserFitting(options: UserFittingOptions) {
     productImage.src = options.productImageUrl;
     productImage.onload = () => {
 
-        ctx.save();
-        ctx.globalAlpha = 0.15;
-        ctx.drawImage(productImage, 0, 0);
-        ctx.restore();
+        // ctx.save();
+        // ctx.globalAlpha = 0.15;
+        // ctx.drawImage(productImage, 0, 0);
+        // ctx.restore();
 
         refresh();
     };
@@ -120,40 +122,63 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
     let w = c.width;
     let h = c.height;
 
-    let handlesMerged: { from: ImageHandle, to: ImageHandle }[] = [];
+    let handlesMerged: { source: ImageHandle, target: ImageHandle }[] = [];
 
     for (let k in handles) {
-        handlesMerged.push({ from: handles[k], to: handleTargets[k] });
+        handlesMerged.push({ source: handles[k], target: handleTargets[k] });
     }
 
-    handlesMerged = handlesMerged.sort((a, b) => a.from.x - b.from.x);
+    handlesMerged = handlesMerged.sort((a, b) => a.source.x - b.source.x);
 
     // Just do a row of cells for now (only vertical dividers)
-    let handles_stretches = handlesMerged.filter(x => x.from.kind !== ImageHandleKind.Move);
+    let handles_stretches = handlesMerged.filter(x => x.source.kind !== ImageHandleKind.Move);
 
-    let gaps = handles_stretches.map((s, i) => ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { from: { x: s.from.x } }).from.x - s.from.x }));
+    let gaps = handles_stretches.map((s, i) => ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }));
     gaps.sort((a, b) => b.xDistance - a.xDistance);
+    // console.log('gaps', gaps);
+
     let widest = gaps[0];
 
     let targetScale =
-        (widest.next.to.x - widest.prev.to.x) /
-        (widest.next.from.x - widest.prev.from.x);
+        (widest.next.target.x - widest.prev.target.x) /
+        (widest.next.source.x - widest.prev.source.x);
 
-    console.log('targetScale', targetScale);
+    let y_delta_source = widest.next.source.y - widest.prev.source.y;
+    let x_delta_source = widest.next.source.x - widest.prev.source.x;
+    let y_delta_target = widest.next.target.y - widest.prev.target.y;
+    let x_delta_target = widest.next.target.x - widest.prev.target.x;
 
+    let sourceAngle = Math.atan(y_delta_source / x_delta_source);
+    let targetAngle = Math.atan(y_delta_target / x_delta_target);
+    let mainAngle = targetAngle - sourceAngle;
+
+    console.log('targetScale', targetScale,
+        'y_delta_source', y_delta_source,
+        'x_delta_source', x_delta_source,
+        'y_delta_target', y_delta_target,
+        'x_delta_target', x_delta_target,
+        'sourceAngle', sourceAngle * 180 / Math.PI,
+        'targetAngle', targetAngle * 180 / Math.PI,
+        'mainAngle', mainAngle * 180 / Math.PI,
+    );
+
+    ctx.save();
+    ctx.rotate(mainAngle);
 
     // Calculate y_top and y_bottom for each stretch handle
-    let stretches = handles_stretches.map(x => {
-        let sourceLeft_yRatioFromTop = x.from.y;
+    let stretches = handles_stretches.map(s => {
+        let sourceLeft_yRatioFromTop = s.source.y;
         let sourceLeft_yRatioFromBottom = 1 - sourceLeft_yRatioFromTop;
 
-        let targetTop = x.to.y - targetScale * sourceLeft_yRatioFromTop;
-        let targetBottom = x.to.y + targetScale * sourceLeft_yRatioFromBottom;
+        let targetTop = s.target.y - targetScale * sourceLeft_yRatioFromTop;
+        let targetBottom = s.target.y + targetScale * sourceLeft_yRatioFromBottom;
 
         return {
-            ...x,
-            y_top_target: targetTop,
-            y_bottom_target: targetBottom,
+            source: s.source,
+            target_orig: s.target,
+            target: rotate(s.target, -mainAngle),
+            y_top_target: rotateY(s.target.x, targetTop, -mainAngle),
+            y_bottom_target: rotateY(s.target.x, targetBottom, -mainAngle),
         };
     });
 
@@ -170,11 +195,11 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
         let left = stretches[i];
         let right = stretches[i + 1];
 
-        let sourceLeft = left.from.x;
-        let sourceRight = right.from.x;
+        let sourceLeft = left.source.x;
+        let sourceRight = right.source.x;
 
-        let targetLeft = left.to.x;
-        let targetRight = right.to.x;
+        let targetLeft = left.target.x;
+        let targetRight = right.target.x;
 
         // Calculate the y scale
         let target_top_left = left.y_top_target;
@@ -258,7 +283,7 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
             w * g.target.x_left, h * g.target.y_bottom_left,
             image.width * g.source.x_left, image.height * g.source.y_top,
             image.width * g.source.x_right, image.height * g.source.y_top,
-            image.width * g.source.x_left, image.height * g.source.y_bottom,// false
+            image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
         );
 
         drawTriangle(ctx, image,
@@ -267,54 +292,50 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
             w * g.target.x_left, h * g.target.y_bottom_left,
             image.width * g.source.x_right, image.height * g.source.y_top,
             image.width * g.source.x_right, image.height * g.source.y_bottom,
-            image.width * g.source.x_left, image.height * g.source.y_bottom,// false
+            image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
         );
 
         // break;
     }
 
-    // Match edges
+    if (DEBUG) {
 
+        stretches.forEach(s => {
+            console.log('draw stretch', s);
+            ctx.beginPath();
+            ctx.strokeStyle = '#FF00FF';
+            ctx.moveTo(w * s.target_orig.x, h * s.target_orig.y);
+            ctx.lineTo(w * s.target.x, h * s.target.y);
+            ctx.stroke();
+            // ctx.beginPath();
+            // ctx.strokeStyle = '#00FFFF';
+            // ctx.moveTo(w * s.target.x, h * s.target.x);
+            // ctx.stroke();
+        });
 
-    // for (let i = 0; i < grid.length; i++) {
-    //     console.log('draw column');
-    //     let column = grid[i];
-    //     for (let j = 0; j < column.length; j++) {
-    //         let cell = column[j];
-    //         ctx.drawImage(image,
-    //             image.width * cell.source.x_left,
-    //             image.height * cell.source.x_right,
-    //             image.width * (cell.source.x_right - cell.source.x_left),
-    //             image.height * (cell.source.y_bottom - cell.source.y_top),
-    //             image.width * cell.target.x_left,
-    //             image.height * cell.target.y_top,
-    //             image.width * (cell.target.x_right - cell.target.x_left),
-    //             image.height * (cell.target.y_bottom - cell.target.y_top)
-    //         );
+        drawHandles(ctx, w, h, stretches.map(s => s.target) as any as ImageHandles, '#FF00FF');
+        drawHandles(ctx, w, h, handles, '#FF0000');
+        drawHandles(ctx, w, h, handleTargets, '#00FF00');
+    }
 
-    //         console.log(image,
-    //             '\n',
-    //             's_x', cell.source.x_left,
-    //             's_y', cell.source.x_right,
-    //             's_w', (cell.source.x_right - cell.source.x_left),
-    //             's_h', (cell.source.y_bottom - cell.source.y_top),
-    //             '\n',
-    //             't_x', cell.target.x_left,
-    //             't_y', cell.target.y_top,
-    //             't_w', (cell.target.x_right - cell.target.x_left),
-    //             't_h', (cell.target.y_bottom - cell.target.y_top)
-    //         );
+    ctx.restore();
+}
 
-    //     }
+function rotate(handle: ImageHandle, angle: number): ImageHandle {
+    let x_rotate = handle.x * Math.cos(angle) - handle.y * Math.sin(angle);
+    let y_rotate = handle.x * Math.sin(angle) + handle.y * Math.cos(angle);
 
-    //     // TESTING
-    //     // break;
-    // }
+    return {
+        kind: handle.kind,
+        x: x_rotate,
+        y: y_rotate,
+    };
+}
 
-    // ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, w, h);
+function rotateY(x: number, y: number, angle: number): number {
+    let y_rotate = x * Math.sin(angle) + y * Math.cos(angle);
 
-    drawHandles(ctx, w, h, handles, '#FF0000');
-    drawHandles(ctx, w, h, handleTargets, '#00FF00');
+    return y_rotate;
 }
 
 function calculateScale(s0: number, s1: number, t0: number, t1: number) {

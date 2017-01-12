@@ -109,15 +109,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __assign = (this && this.__assign) || Object.assign || function(t) {
-	    for (var s, i = 1, n = arguments.length; i < n; i++) {
-	        s = arguments[i];
-	        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-	            t[p] = s[p];
-	    }
-	    return t;
-	};
 	var draw_triangle_1 = __webpack_require__(3);
+	var DEBUG = true;
 	var ImageHandleKind;
 	(function (ImageHandleKind) {
 	    ImageHandleKind[ImageHandleKind["Stretch"] = 0] = "Stretch";
@@ -150,10 +143,10 @@
 	    var productImage = new Image();
 	    productImage.src = options.productImageUrl;
 	    productImage.onload = function () {
-	        ctx.save();
-	        ctx.globalAlpha = 0.15;
-	        ctx.drawImage(productImage, 0, 0);
-	        ctx.restore();
+	        // ctx.save();
+	        // ctx.globalAlpha = 0.15;
+	        // ctx.drawImage(productImage, 0, 0);
+	        // ctx.restore();
 	        refresh();
 	    };
 	    var c = { context: ctx, width: w, height: h };
@@ -175,24 +168,40 @@
 	    var h = c.height;
 	    var handlesMerged = [];
 	    for (var k in handles) {
-	        handlesMerged.push({ from: handles[k], to: handleTargets[k] });
+	        handlesMerged.push({ source: handles[k], target: handleTargets[k] });
 	    }
-	    handlesMerged = handlesMerged.sort(function (a, b) { return a.from.x - b.from.x; });
+	    handlesMerged = handlesMerged.sort(function (a, b) { return a.source.x - b.source.x; });
 	    // Just do a row of cells for now (only vertical dividers)
-	    var handles_stretches = handlesMerged.filter(function (x) { return x.from.kind !== ImageHandleKind.Move; });
-	    var gaps = handles_stretches.map(function (s, i) { return ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { from: { x: s.from.x } }).from.x - s.from.x }); });
+	    var handles_stretches = handlesMerged.filter(function (x) { return x.source.kind !== ImageHandleKind.Move; });
+	    var gaps = handles_stretches.map(function (s, i) { return ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }); });
 	    gaps.sort(function (a, b) { return b.xDistance - a.xDistance; });
+	    // console.log('gaps', gaps);
 	    var widest = gaps[0];
-	    var targetScale = (widest.next.to.x - widest.prev.to.x) /
-	        (widest.next.from.x - widest.prev.from.x);
-	    console.log('targetScale', targetScale);
+	    var targetScale = (widest.next.target.x - widest.prev.target.x) /
+	        (widest.next.source.x - widest.prev.source.x);
+	    var y_delta_source = widest.next.source.y - widest.prev.source.y;
+	    var x_delta_source = widest.next.source.x - widest.prev.source.x;
+	    var y_delta_target = widest.next.target.y - widest.prev.target.y;
+	    var x_delta_target = widest.next.target.x - widest.prev.target.x;
+	    var sourceAngle = Math.atan(y_delta_source / x_delta_source);
+	    var targetAngle = Math.atan(y_delta_target / x_delta_target);
+	    var mainAngle = targetAngle - sourceAngle;
+	    console.log('targetScale', targetScale, 'y_delta_source', y_delta_source, 'x_delta_source', x_delta_source, 'y_delta_target', y_delta_target, 'x_delta_target', x_delta_target, 'sourceAngle', sourceAngle * 180 / Math.PI, 'targetAngle', targetAngle * 180 / Math.PI, 'mainAngle', mainAngle * 180 / Math.PI);
+	    ctx.save();
+	    ctx.rotate(mainAngle);
 	    // Calculate y_top and y_bottom for each stretch handle
-	    var stretches = handles_stretches.map(function (x) {
-	        var sourceLeft_yRatioFromTop = x.from.y;
+	    var stretches = handles_stretches.map(function (s) {
+	        var sourceLeft_yRatioFromTop = s.source.y;
 	        var sourceLeft_yRatioFromBottom = 1 - sourceLeft_yRatioFromTop;
-	        var targetTop = x.to.y - targetScale * sourceLeft_yRatioFromTop;
-	        var targetBottom = x.to.y + targetScale * sourceLeft_yRatioFromBottom;
-	        return __assign({}, x, { y_top_target: targetTop, y_bottom_target: targetBottom });
+	        var targetTop = s.target.y - targetScale * sourceLeft_yRatioFromTop;
+	        var targetBottom = s.target.y + targetScale * sourceLeft_yRatioFromBottom;
+	        return {
+	            source: s.source,
+	            target_orig: s.target,
+	            target: rotate(s.target, -mainAngle),
+	            y_top_target: rotateY(s.target.x, targetTop, -mainAngle),
+	            y_bottom_target: rotateY(s.target.x, targetBottom, -mainAngle),
+	        };
 	    });
 	    var columnCount = stretches.length - 1;
 	    var grid = [];
@@ -201,10 +210,10 @@
 	        var sourceBottom = 1;
 	        var left = stretches[i];
 	        var right = stretches[i + 1];
-	        var sourceLeft = left.from.x;
-	        var sourceRight = right.from.x;
-	        var targetLeft = left.to.x;
-	        var targetRight = right.to.x;
+	        var sourceLeft = left.source.x;
+	        var sourceRight = right.source.x;
+	        var targetLeft = left.target.x;
+	        var targetRight = right.target.x;
 	        // Calculate the y scale
 	        var target_top_left = left.y_top_target;
 	        var target_bottom_left = left.y_bottom_target;
@@ -265,44 +274,40 @@
 	        //     image.width * g.target.x_right, image.height * g.target.y_bottom,
 	        //     image.width * g.target.x_left, image.height * g.target.y_bottom
 	        // );
-	        draw_triangle_1.drawTriangle(ctx, image, w * g.target.x_left, h * g.target.y_top_left, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_left, image.height * g.source.y_bottom);
-	        draw_triangle_1.drawTriangle(ctx, image, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_right, h * g.target.y_bottom_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom);
+	        draw_triangle_1.drawTriangle(ctx, image, w * g.target.x_left, h * g.target.y_top_left, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
+	        draw_triangle_1.drawTriangle(ctx, image, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_right, h * g.target.y_bottom_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
 	    }
-	    // Match edges
-	    // for (let i = 0; i < grid.length; i++) {
-	    //     console.log('draw column');
-	    //     let column = grid[i];
-	    //     for (let j = 0; j < column.length; j++) {
-	    //         let cell = column[j];
-	    //         ctx.drawImage(image,
-	    //             image.width * cell.source.x_left,
-	    //             image.height * cell.source.x_right,
-	    //             image.width * (cell.source.x_right - cell.source.x_left),
-	    //             image.height * (cell.source.y_bottom - cell.source.y_top),
-	    //             image.width * cell.target.x_left,
-	    //             image.height * cell.target.y_top,
-	    //             image.width * (cell.target.x_right - cell.target.x_left),
-	    //             image.height * (cell.target.y_bottom - cell.target.y_top)
-	    //         );
-	    //         console.log(image,
-	    //             '\n',
-	    //             's_x', cell.source.x_left,
-	    //             's_y', cell.source.x_right,
-	    //             's_w', (cell.source.x_right - cell.source.x_left),
-	    //             's_h', (cell.source.y_bottom - cell.source.y_top),
-	    //             '\n',
-	    //             't_x', cell.target.x_left,
-	    //             't_y', cell.target.y_top,
-	    //             't_w', (cell.target.x_right - cell.target.x_left),
-	    //             't_h', (cell.target.y_bottom - cell.target.y_top)
-	    //         );
-	    //     }
-	    //     // TESTING
-	    //     // break;
-	    // }
-	    // ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, w, h);
-	    drawHandles(ctx, w, h, handles, '#FF0000');
-	    drawHandles(ctx, w, h, handleTargets, '#00FF00');
+	    if (DEBUG) {
+	        stretches.forEach(function (s) {
+	            console.log('draw stretch', s);
+	            ctx.beginPath();
+	            ctx.strokeStyle = '#FF00FF';
+	            ctx.moveTo(w * s.target_orig.x, h * s.target_orig.y);
+	            ctx.lineTo(w * s.target.x, h * s.target.y);
+	            ctx.stroke();
+	            // ctx.beginPath();
+	            // ctx.strokeStyle = '#00FFFF';
+	            // ctx.moveTo(w * s.target.x, h * s.target.x);
+	            // ctx.stroke();
+	        });
+	        drawHandles(ctx, w, h, stretches.map(function (s) { return s.target; }), '#FF00FF');
+	        drawHandles(ctx, w, h, handles, '#FF0000');
+	        drawHandles(ctx, w, h, handleTargets, '#00FF00');
+	    }
+	    ctx.restore();
+	}
+	function rotate(handle, angle) {
+	    var x_rotate = handle.x * Math.cos(angle) - handle.y * Math.sin(angle);
+	    var y_rotate = handle.x * Math.sin(angle) + handle.y * Math.cos(angle);
+	    return {
+	        kind: handle.kind,
+	        x: x_rotate,
+	        y: y_rotate,
+	    };
+	}
+	function rotateY(x, y, angle) {
+	    var y_rotate = x * Math.sin(angle) + y * Math.cos(angle);
+	    return y_rotate;
 	}
 	function calculateScale(s0, s1, t0, t1) {
 	    // if (s0 <= s1 || t0 <= t1) { return 0; }
@@ -340,7 +345,7 @@
 	"use strict";
 	// Based on: jsgl.js https://github.com/spoulson/Code-snippets/blob/master/Javascript/jsgl/jsgl.js
 	function drawTriangle(ctx, image, x0, y0, x1, y1, x2, y2, sx0, sy0, sx1, sy1, sx2, sy2, wireframe) {
-	    if (wireframe === void 0) { wireframe = true; }
+	    if (wireframe === void 0) { wireframe = false; }
 	    if (wireframe) {
 	        ctx.lineWidth = 0.5;
 	        ctx.strokeStyle = '#00FF00';
