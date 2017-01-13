@@ -171,6 +171,7 @@
 
 	"use strict";
 	var draw_quad_1 = __webpack_require__(3);
+	var draw_with_blur_1 = __webpack_require__(4);
 	var DEBUG = false;
 	var DEBUG_MOUSE = false;
 	var MAX_DRAG_DISTANCE_SQ = 0.05 * 0.05;
@@ -227,6 +228,7 @@
 	        refresh();
 	    };
 	    productImage.src = options.productImageUrl;
+	    var productImage_adjusted;
 	    var refresh = function () {
 	        if (!userImage.width || !productImage.width) {
 	            setTimeout(refresh, 250);
@@ -237,6 +239,13 @@
 	        c.width = w = cvs.width;
 	        c.height = h = cvs.height;
 	        //}
+	        // if (productImage_adjusted == null) {
+	        //     let buffer = new DrawingBuffer(productImage.width, productImage.height);
+	        //     drawWithShade(buffer.context, productImage.width, productImage.height, '#000000', 0.15, ctx2 => {
+	        //         ctx2.drawImage(productImage, 0, 0, productImage.width, productImage.height);
+	        //     });
+	        //     productImage_adjusted = buffer.canvas;
+	        // }
 	        refreshUserFitting(c, userImage, productImage, options);
 	    };
 	    setTimeout(refresh, 250);
@@ -349,10 +358,11 @@
 	}
 	function refreshUserFitting(c, userImage, productImage, options) {
 	    log('refresh');
-	    drawImage(c, userImage, options.userImageHandles, options.userImageHandles);
-	    drawImage(c, productImage, options.productImageHandles, options.userImageHandles);
+	    c.context.clearRect(0, 0, c.width, c.height);
+	    c.context.drawImage(userImage, 0, 0, c.width, c.height);
+	    drawImageAligned(c, productImage, options.productImageHandles, options.userImageHandles);
 	}
-	function drawImage(c, image, handles, handleTargets) {
+	function drawImageAligned(c, image, handles, handleTargets) {
 	    var ctx = c.context;
 	    var w = c.width;
 	    var h = c.height;
@@ -399,7 +409,7 @@
 	    var grid = [];
 	    gaps.reverse();
 	    var columnOrder = gaps.filter(function (g) { return g.xDistance > 0; }).map(function (g) { return g.i; });
-	    for (var ico = 0; ico < columnCount; ico++) {
+	    var _loop_1 = function (ico) {
 	        var i = columnOrder[ico];
 	        var sourceTop = 0;
 	        var sourceBottom = 1;
@@ -485,7 +495,13 @@
 	        //     image.width * g.source.x_right, image.height * g.source.y_bottom,
 	        //     image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
 	        // );
-	        draw_quad_1.drawQuad(ctx, image, w * g.target.x_left, h * g.target.y_top_left, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_right, h * g.target.y_bottom_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
+	        draw_with_blur_1.drawWithEdgeBlur(ctx, w, h, function (ctx2) {
+	            draw_quad_1.drawQuad(ctx2, image, w * g.target.x_left, h * g.target.y_top_left, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_right, h * g.target.y_bottom_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
+	        });
+	        // break;
+	    };
+	    for (var ico = 0; ico < columnCount; ico++) {
+	        _loop_1(ico);
 	    }
 	    if (DEBUG) {
 	        stretches.forEach(function (s) {
@@ -654,6 +670,70 @@
 	}
 	exports.drawQuad = drawQuad;
 	;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var drawing_buffer_1 = __webpack_require__(5);
+	var drawBuffer;
+	var blurBuffer;
+	var mergeBuffer;
+	// Draw edge blur by downsampling image to half size, drawing that first and then drawing sharp image on top
+	function drawWithEdgeBlur(ctx, width, height, draw) {
+	    var downsample_ratio = 0.5;
+	    var downsample_alpha = 0.5;
+	    if (drawBuffer == null) {
+	        drawBuffer = new drawing_buffer_1.DrawingBuffer(width, height);
+	    }
+	    drawBuffer.clear(width, height);
+	    if (blurBuffer == null) {
+	        blurBuffer = new drawing_buffer_1.DrawingBuffer(width * downsample_ratio, height * downsample_ratio);
+	    }
+	    blurBuffer.clear(width * downsample_ratio, height * downsample_ratio);
+	    if (mergeBuffer == null) {
+	        mergeBuffer = new drawing_buffer_1.DrawingBuffer(width, height);
+	    }
+	    mergeBuffer.clear(width, height);
+	    draw(drawBuffer.context);
+	    blurBuffer.context.drawImage(drawBuffer.canvas, 0, 0, width, height, 0, 0, width * downsample_ratio, height * downsample_ratio);
+	    mergeBuffer.context.globalAlpha = downsample_alpha;
+	    mergeBuffer.context.drawImage(blurBuffer.canvas, 0, 0, width * downsample_ratio, height * downsample_ratio, 0, 0, width, height);
+	    mergeBuffer.context.globalAlpha = 1;
+	    mergeBuffer.context.drawImage(drawBuffer.canvas, 0, 0, width, height, 0, 0, width, height);
+	    ctx.drawImage(mergeBuffer.canvas, 0, 0, width, height, 0, 0, width, height);
+	}
+	exports.drawWithEdgeBlur = drawWithEdgeBlur;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	"use strict";
+	var DEBUG = false;
+	var DrawingBuffer = (function () {
+	    function DrawingBuffer(width, height) {
+	        this.canvas = document.createElement('canvas');
+	        this.canvas.width = width;
+	        this.canvas.height = height;
+	        this.context = this.canvas.getContext('2d');
+	        if (DEBUG) {
+	            document.body.appendChild(this.canvas);
+	        }
+	    }
+	    DrawingBuffer.prototype.clear = function (width, height) {
+	        if (this.canvas.width !== width) {
+	            this.canvas.width = width;
+	            this.canvas.height = height;
+	        }
+	        this.context.clearRect(0, 0, width, height);
+	    };
+	    return DrawingBuffer;
+	}());
+	exports.DrawingBuffer = DrawingBuffer;
 
 
 /***/ }

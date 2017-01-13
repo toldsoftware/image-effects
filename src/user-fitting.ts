@@ -1,5 +1,8 @@
 import { drawTriangle } from './draw-triangle';
 import { drawQuad } from './draw-quad';
+import { drawWithEdgeBlur } from './draw-with-blur';
+import { drawWithShade } from './draw-with-shade';
+import { DrawingBuffer } from './drawing-buffer';
 
 const DEBUG = false;
 const DEBUG_MOUSE = false;
@@ -118,6 +121,7 @@ export function setupUserFitting(options: UserFittingOptions) {
     };
     productImage.src = options.productImageUrl;
 
+    let productImage_adjusted: HTMLCanvasElement;
 
     let refresh = () => {
         if (!userImage.width || !productImage.width) {
@@ -131,6 +135,15 @@ export function setupUserFitting(options: UserFittingOptions) {
         c.width = w = cvs.width;
         c.height = h = cvs.height;
         //}
+
+        // if (productImage_adjusted == null) {
+        //     let buffer = new DrawingBuffer(productImage.width, productImage.height);
+        //     drawWithShade(buffer.context, productImage.width, productImage.height, '#000000', 0.15, ctx2 => {
+        //         ctx2.drawImage(productImage, 0, 0, productImage.width, productImage.height);
+        //     });
+
+        //     productImage_adjusted = buffer.canvas;
+        // }
 
         refreshUserFitting(c, userImage, productImage, options);
     };
@@ -257,14 +270,15 @@ function log(message: any, ...args: any[]) {
 }
 
 
-function refreshUserFitting(c: DrawContext, userImage: HTMLImageElement, productImage: HTMLImageElement, options: UserFittingOptions) {
+function refreshUserFitting(c: DrawContext, userImage: HTMLImageElement, productImage: HTMLImageElement | HTMLCanvasElement, options: UserFittingOptions) {
     log('refresh');
 
-    drawImage(c, userImage, options.userImageHandles, options.userImageHandles);
-    drawImage(c, productImage, options.productImageHandles, options.userImageHandles);
+c.context.clearRect(0,0,c.width,c.height);
+    c.context.drawImage(userImage, 0, 0, c.width, c.height);
+    drawImageAligned(c, productImage, options.productImageHandles, options.userImageHandles);
 }
 
-function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandles, handleTargets: ImageHandles) {
+function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasElement, handles: ImageHandles, handleTargets: ImageHandles) {
     let ctx = c.context;
     let w = c.width;
     let h = c.height;
@@ -449,17 +463,19 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
         //     image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
         // );
 
-        drawQuad(ctx, image,
-            w * g.target.x_left, h * g.target.y_top_left,
-            w * g.target.x_right, h * g.target.y_top_right,
-            w * g.target.x_right, h * g.target.y_bottom_right,
-            w * g.target.x_left, h * g.target.y_bottom_left,
-            image.width * g.source.x_left, image.height * g.source.y_top,
-            image.width * g.source.x_right, image.height * g.source.y_top,
-            image.width * g.source.x_right, image.height * g.source.y_bottom,
-            image.width * g.source.x_left, image.height * g.source.y_bottom,
-            DEBUG
-        );
+        drawWithEdgeBlur(ctx, w, h, (ctx2) => {
+            drawQuad(ctx2, image,
+                w * g.target.x_left, h * g.target.y_top_left,
+                w * g.target.x_right, h * g.target.y_top_right,
+                w * g.target.x_right, h * g.target.y_bottom_right,
+                w * g.target.x_left, h * g.target.y_bottom_left,
+                image.width * g.source.x_left, image.height * g.source.y_top,
+                image.width * g.source.x_right, image.height * g.source.y_top,
+                image.width * g.source.x_right, image.height * g.source.y_bottom,
+                image.width * g.source.x_left, image.height * g.source.y_bottom,
+                DEBUG
+            );
+        });
 
         // break;
     }
