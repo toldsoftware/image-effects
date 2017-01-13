@@ -53,12 +53,15 @@
 	    var u0 = getUser(0);
 	    var u1 = getUser(1);
 	    var u2 = getUser(2);
+	    var u3 = getUser(3);
 	    addTest(p0, u0);
 	    addTest(p0, u1);
 	    addTest(p0, u2);
+	    addTest(p0, u3);
 	    addTest(p1, u0);
 	    addTest(p1, u1);
 	    addTest(p1, u2);
+	    addTest(p1, u3);
 	    console.log('test END');
 	}
 	exports.test = test;
@@ -125,7 +128,7 @@
 	            },
 	        };
 	    }
-	    else {
+	    else if (i === 2) {
 	        return {
 	            userImageUrl: '/userImage02.jpg',
 	            userImageHandles: {
@@ -133,6 +136,17 @@
 	                right_temple: { x: 406 / 600, y: 184 / 600 },
 	                left_earpiece: { x: 150 / 600, y: 255 / 600 },
 	                right_earpiece: { x: 425 / 600, y: 205 / 600 },
+	            },
+	        };
+	    }
+	    else {
+	        return {
+	            userImageUrl: '/userImage03.png',
+	            userImageHandles: {
+	                left_temple: { x: 243 / 600, y: 316 / 600 },
+	                right_temple: { x: 452 / 600, y: 207 / 600 },
+	                left_earpiece: { x: 161 / 600, y: 282 / 600 },
+	                right_earpiece: { x: 413 / 600, y: 186 / 600 },
 	            },
 	        };
 	    }
@@ -345,7 +359,7 @@
 	    handlesMerged = handlesMerged.sort(function (a, b) { return a.source.x - b.source.x; });
 	    // Just do a row of cells for now (only vertical dividers)
 	    var handles_stretches = handlesMerged.filter(function (x) { return x.source.kind !== ImageHandleKind.Anchor; });
-	    var gaps = handles_stretches.map(function (s, i) { return ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }); });
+	    var gaps = handles_stretches.map(function (s, i) { return ({ i: i, prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }); });
 	    gaps.sort(function (a, b) { return b.xDistance - a.xDistance; });
 	    // log('gaps', gaps);
 	    var widest = gaps[0];
@@ -379,7 +393,10 @@
 	    });
 	    var columnCount = stretches.length - 1;
 	    var grid = [];
-	    for (var i = 0; i < columnCount; i++) {
+	    gaps.reverse();
+	    var columnOrder = gaps.filter(function (g) { return g.xDistance > 0; }).map(function (g) { return g.i; });
+	    for (var ico = 0; ico < columnCount; ico++) {
+	        var i = columnOrder[ico];
 	        var sourceTop = 0;
 	        var sourceBottom = 1;
 	        var left = stretches[i];

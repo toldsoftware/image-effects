@@ -273,7 +273,7 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
     // Just do a row of cells for now (only vertical dividers)
     let handles_stretches = handlesMerged.filter(x => x.source.kind !== ImageHandleKind.Anchor);
 
-    let gaps = handles_stretches.map((s, i) => ({ prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }));
+    let gaps = handles_stretches.map((s, i) => ({ i: i, prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }));
     gaps.sort((a, b) => b.xDistance - a.xDistance);
     // log('gaps', gaps);
 
@@ -330,8 +330,12 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
 
     let grid: TransformCell[][] = [];
 
-    for (let i = 0; i < columnCount; i++) {
+    gaps.reverse();
+    let columnOrder: number[] = gaps.filter(g => g.xDistance > 0).map(g => g.i);
 
+    for (let ico = 0; ico < columnCount; ico++) {
+
+        let i = columnOrder[ico];
         let sourceTop = 0;
         let sourceBottom = 1;
 
