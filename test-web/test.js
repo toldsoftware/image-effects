@@ -189,8 +189,8 @@
 	    options.host.appendChild(cvs);
 	    cvs.width = options.host.clientWidth;
 	    cvs.height = options.host.clientHeight;
-	    var w = cvs.width;
-	    var h = cvs.height;
+	    var w = cvs.width | 600;
+	    var h = cvs.height | 600;
 	    // // Oversize to be able to see better
 	    // if (DEBUG) {
 	    //     cvs.width = 1200;
@@ -206,7 +206,6 @@
 	    }
 	    // TODO: Add Image Loader (for iOS)
 	    var userImage = new Image();
-	    userImage.src = options.userImageUrl;
 	    userImage.onload = function () {
 	        // ctx.save();
 	        // ctx.globalAlpha = 0.15;
@@ -216,8 +215,8 @@
 	        // c.height = userImage.height;
 	        refresh();
 	    };
+	    userImage.src = options.userImageUrl;
 	    var productImage = new Image();
-	    productImage.src = options.productImageUrl;
 	    productImage.onload = function () {
 	        if (DEBUG) {
 	            ctx.save();
@@ -227,15 +226,20 @@
 	        }
 	        refresh();
 	    };
-	    var c = { context: ctx, width: w, height: h };
+	    productImage.src = options.productImageUrl;
 	    var refresh = function () {
+	        if (!userImage.width || !productImage.width) {
+	            setTimeout(refresh, 250);
+	            return;
+	        }
+	        var c = { context: ctx, width: w || 600, height: h || 600 };
 	        if (!DEBUG) {
 	            c.width = w = cvs.width;
 	            c.height = h = cvs.height;
 	        }
 	        refreshUserFitting(c, userImage, productImage, options);
 	    };
-	    setTimeout(refresh);
+	    setTimeout(refresh, 250);
 	    var userHandles = [];
 	    for (var k in options.userImageHandles) {
 	        userHandles.push(options.userImageHandles[k]);

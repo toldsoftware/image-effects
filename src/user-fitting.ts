@@ -68,8 +68,8 @@ export function setupUserFitting(options: UserFittingOptions) {
     cvs.width = options.host.clientWidth;
     cvs.height = options.host.clientHeight;
 
-    let w = cvs.width;
-    let h = cvs.height;
+    let w = cvs.width | 600;
+    let h = cvs.height | 600;
 
     // // Oversize to be able to see better
     // if (DEBUG) {
@@ -90,7 +90,6 @@ export function setupUserFitting(options: UserFittingOptions) {
     // TODO: Add Image Loader (for iOS)
 
     let userImage = new Image();
-    userImage.src = options.userImageUrl;
     userImage.onload = () => {
 
         // ctx.save();
@@ -102,9 +101,9 @@ export function setupUserFitting(options: UserFittingOptions) {
 
         refresh();
     };
+    userImage.src = options.userImageUrl;
 
     let productImage = new Image();
-    productImage.src = options.productImageUrl;
     productImage.onload = () => {
 
         if (DEBUG) {
@@ -116,9 +115,16 @@ export function setupUserFitting(options: UserFittingOptions) {
 
         refresh();
     };
+    productImage.src = options.productImageUrl;
 
-    let c = { context: ctx, width: w, height: h };
+
     let refresh = () => {
+        if (!userImage.width || !productImage.width) {
+            setTimeout(refresh, 250);
+            return;
+        }
+
+        let c = { context: ctx, width: w || 600, height: h || 600 };
 
         if (!DEBUG) {
             c.width = w = cvs.width;
@@ -128,7 +134,7 @@ export function setupUserFitting(options: UserFittingOptions) {
         refreshUserFitting(c, userImage, productImage, options);
     };
 
-    setTimeout(refresh);
+    setTimeout(refresh, 250);
 
     let userHandles: ImageHandle[] = [];
 
