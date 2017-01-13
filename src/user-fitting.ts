@@ -1,4 +1,5 @@
 import { drawTriangle } from './draw-triangle';
+import { drawQuad } from './draw-quad';
 
 const DEBUG = false;
 const DEBUG_MOUSE = false;
@@ -126,10 +127,10 @@ export function setupUserFitting(options: UserFittingOptions) {
 
         let c = { context: ctx, width: w || 600, height: h || 600 };
 
-        if (!DEBUG) {
-            c.width = w = cvs.width;
-            c.height = h = cvs.height;
-        }
+        // if (!DEBUG) {
+        c.width = w = cvs.width;
+        c.height = h = cvs.height;
+        //}
 
         refreshUserFitting(c, userImage, productImage, options);
     };
@@ -430,22 +431,34 @@ function drawImage(c: DrawContext, image: HTMLImageElement, handles: ImageHandle
         //     image.width * g.target.x_left, image.height * g.target.y_bottom
         // );
 
-        drawTriangle(ctx, image,
-            w * g.target.x_left, h * g.target.y_top_left,
-            w * g.target.x_right, h * g.target.y_top_right,
-            w * g.target.x_left, h * g.target.y_bottom_left,
-            image.width * g.source.x_left, image.height * g.source.y_top,
-            image.width * g.source.x_right, image.height * g.source.y_top,
-            image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
-        );
+        // drawTriangle(ctx, image,
+        //     w * g.target.x_left, h * g.target.y_top_left,
+        //     w * g.target.x_right, h * g.target.y_top_right,
+        //     w * g.target.x_left, h * g.target.y_bottom_left,
+        //     image.width * g.source.x_left, image.height * g.source.y_top,
+        //     image.width * g.source.x_right, image.height * g.source.y_top,
+        //     image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
+        // );
 
-        drawTriangle(ctx, image,
+        // drawTriangle(ctx, image,
+        //     w * g.target.x_right, h * g.target.y_top_right,
+        //     w * g.target.x_right, h * g.target.y_bottom_right,
+        //     w * g.target.x_left, h * g.target.y_bottom_left,
+        //     image.width * g.source.x_right, image.height * g.source.y_top,
+        //     image.width * g.source.x_right, image.height * g.source.y_bottom,
+        //     image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
+        // );
+
+        drawQuad(ctx, image,
+            w * g.target.x_left, h * g.target.y_top_left,
             w * g.target.x_right, h * g.target.y_top_right,
             w * g.target.x_right, h * g.target.y_bottom_right,
             w * g.target.x_left, h * g.target.y_bottom_left,
+            image.width * g.source.x_left, image.height * g.source.y_top,
             image.width * g.source.x_right, image.height * g.source.y_top,
             image.width * g.source.x_right, image.height * g.source.y_bottom,
-            image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
+            image.width * g.source.x_left, image.height * g.source.y_bottom,
+            DEBUG
         );
 
         // break;

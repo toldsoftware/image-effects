@@ -170,7 +170,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var draw_triangle_1 = __webpack_require__(3);
+	var draw_quad_1 = __webpack_require__(3);
 	var DEBUG = false;
 	var DEBUG_MOUSE = false;
 	var MAX_DRAG_DISTANCE_SQ = 0.05 * 0.05;
@@ -233,10 +233,10 @@
 	            return;
 	        }
 	        var c = { context: ctx, width: w || 600, height: h || 600 };
-	        if (!DEBUG) {
-	            c.width = w = cvs.width;
-	            c.height = h = cvs.height;
-	        }
+	        // if (!DEBUG) {
+	        c.width = w = cvs.width;
+	        c.height = h = cvs.height;
+	        //}
 	        refreshUserFitting(c, userImage, productImage, options);
 	    };
 	    setTimeout(refresh, 250);
@@ -469,8 +469,23 @@
 	        //     image.width * g.target.x_right, image.height * g.target.y_bottom,
 	        //     image.width * g.target.x_left, image.height * g.target.y_bottom
 	        // );
-	        draw_triangle_1.drawTriangle(ctx, image, w * g.target.x_left, h * g.target.y_top_left, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
-	        draw_triangle_1.drawTriangle(ctx, image, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_right, h * g.target.y_bottom_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
+	        // drawTriangle(ctx, image,
+	        //     w * g.target.x_left, h * g.target.y_top_left,
+	        //     w * g.target.x_right, h * g.target.y_top_right,
+	        //     w * g.target.x_left, h * g.target.y_bottom_left,
+	        //     image.width * g.source.x_left, image.height * g.source.y_top,
+	        //     image.width * g.source.x_right, image.height * g.source.y_top,
+	        //     image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
+	        // );
+	        // drawTriangle(ctx, image,
+	        //     w * g.target.x_right, h * g.target.y_top_right,
+	        //     w * g.target.x_right, h * g.target.y_bottom_right,
+	        //     w * g.target.x_left, h * g.target.y_bottom_left,
+	        //     image.width * g.source.x_right, image.height * g.source.y_top,
+	        //     image.width * g.source.x_right, image.height * g.source.y_bottom,
+	        //     image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
+	        // );
+	        draw_quad_1.drawQuad(ctx, image, w * g.target.x_left, h * g.target.y_top_left, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_right, h * g.target.y_bottom_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
 	    }
 	    if (DEBUG) {
 	        stretches.forEach(function (s) {
@@ -542,7 +557,12 @@
 
 	"use strict";
 	// Based on: jsgl.js https://github.com/spoulson/Code-snippets/blob/master/Javascript/jsgl/jsgl.js
-	function drawTriangle(ctx, image, x0, y0, x1, y1, x2, y2, sx0, sy0, sx1, sy1, sx2, sy2, wireframe) {
+	// For pixel rounding purposes during clipping:
+	// (x0,y0) = (top, left)
+	// (x1,y1) = (top, right)
+	// (x2,y2) = (bottom, right)
+	// (x3,y3) = (bottom, left)
+	function drawQuad(ctx, image, x0, y0, x1, y1, x2, y2, x3, y3, sx0, sy0, sx1, sy1, sx2, sy2, sx3, sy3, wireframe) {
 	    if (wireframe === void 0) { wireframe = false; }
 	    if (wireframe) {
 	        ctx.lineWidth = 0.5;
@@ -551,6 +571,7 @@
 	        ctx.moveTo(x0, y0);
 	        ctx.lineTo(x1, y1);
 	        ctx.lineTo(x2, y2);
+	        ctx.lineTo(x3, y3);
 	        ctx.lineTo(x0, y0);
 	        ctx.stroke();
 	        ctx.closePath();
@@ -559,6 +580,7 @@
 	        ctx.moveTo(sx0, sy0);
 	        ctx.lineTo(sx1, sy1);
 	        ctx.lineTo(sx2, sy2);
+	        ctx.lineTo(sx3, sy3);
 	        ctx.lineTo(sx0, sy0);
 	        ctx.stroke();
 	        ctx.closePath();
@@ -568,9 +590,15 @@
 	    ctx.save();
 	    // Clip the output to the on-screen triangle boundaries.
 	    ctx.beginPath();
-	    ctx.moveTo(x0, y0);
-	    ctx.lineTo(x1, y1);
-	    ctx.lineTo(x2, y2);
+	    // ctx.moveTo(x0, y0);
+	    // ctx.lineTo(x1, y1);
+	    // ctx.lineTo(x2, y2);
+	    // ctx.lineTo(x3, y3);
+	    // Remove border lines
+	    ctx.moveTo(Math.floor(x0), Math.floor(y0));
+	    ctx.lineTo(Math.ceil(x1), Math.floor(y1));
+	    ctx.lineTo(Math.ceil(x2), Math.ceil(y2));
+	    ctx.lineTo(Math.floor(x3), Math.ceil(y3));
 	    ctx.closePath();
 	    // ctx.stroke();//xxxxxxx for wireframe
 	    ctx.clip();
@@ -624,7 +652,7 @@
 	    ctx.drawImage(image, 0, 0);
 	    ctx.restore();
 	}
-	exports.drawTriangle = drawTriangle;
+	exports.drawQuad = drawQuad;
 	;
 
 
