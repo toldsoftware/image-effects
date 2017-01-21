@@ -6,7 +6,7 @@
 // (x3,y3) = (bottom, left)
 export function drawQuad(
     ctx: CanvasRenderingContext2D,
-    image: HTMLImageElement,
+    image: HTMLImageElement | HTMLCanvasElement,
     x0: number,
     y0: number,
     x1: number,

@@ -45,11 +45,23 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var __assign = (this && this.__assign) || Object.assign || function(t) {
+	    for (var s, i = 1, n = arguments.length; i < n; i++) {
+	        s = arguments[i];
+	        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+	            t[p] = s[p];
+	    }
+	    return t;
+	};
 	var S = __webpack_require__(1);
 	function test() {
 	    console.log('test START');
 	    var p0 = getProduct(0);
 	    var p1 = getProduct(1);
+	    var p2 = getProduct(2);
+	    var p3 = getProduct(3);
+	    var p4 = getProduct(4);
+	    var p5 = getProduct(5);
 	    var u0 = getUser(0);
 	    var u1 = getUser(1);
 	    var u2 = getUser(2);
@@ -62,6 +74,27 @@
 	    addTest(p1, u1);
 	    addTest(p1, u2);
 	    addTest(p1, u3);
+	    addTest(p2, u0);
+	    addTest(p2, u1);
+	    addTest(p2, u2);
+	    addTest(p2, u3);
+	    addTest(p3, u0);
+	    addTest(p3, u1);
+	    addTest(p3, u2);
+	    addTest(p3, u3);
+	    addTest(p4, u0);
+	    addTest(p4, u1);
+	    addTest(p4, u2);
+	    addTest(p4, u3);
+	    addTest(p5, u0);
+	    addTest(p5, u1);
+	    addTest(p5, u2);
+	    addTest(p5, u3);
+	    var productJsonObj = __assign({}, p1.productImageHandles);
+	    delete (productJsonObj.center);
+	    console.log('product json', JSON.stringify(productJsonObj));
+	    var userJsonObj = __assign({}, u0.userImageHandles);
+	    console.log('user json', JSON.stringify(userJsonObj));
 	    console.log('test END');
 	}
 	exports.test = test;
@@ -80,19 +113,19 @@
 	    });
 	}
 	function getProduct(i) {
-	    if (i === 0) {
+	    if (i === 1) {
 	        return {
-	            productImageUrl: '/productImage.png',
+	            productImageUrl: '/productImage01.png',
 	            productImageHandles: {
-	                center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Anchor },
-	                left_temple: { x: 58 / 600, y: 246 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                right_temple: { x: 544 / 600, y: 248 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                left_earpiece: { x: 18 / 600, y: 280 / 600 },
-	                right_earpiece: { x: 583 / 600, y: 304 / 600 },
+	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
 	            },
 	        };
 	    }
-	    else {
+	    else if (i === 2) {
 	        return {
 	            productImageUrl: '/productImage02.png',
 	            productImageHandles: {
@@ -101,6 +134,54 @@
 	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
 	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
 	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	            },
+	        };
+	    }
+	    else if (i === 3) {
+	        return {
+	            productImageUrl: '/productImage03.png',
+	            productImageHandles: {
+	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	            },
+	        };
+	    }
+	    else if (i === 4) {
+	        return {
+	            productImageUrl: '/productImage04.png',
+	            productImageHandles: {
+	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	            },
+	        };
+	    }
+	    else if (i === 5) {
+	        return {
+	            productImageUrl: '/productImage05.png',
+	            productImageHandles: {
+	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	            },
+	        };
+	    }
+	    else {
+	        return {
+	            productImageUrl: '/productImage.png',
+	            productImageHandles: {
+	                center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Anchor },
+	                left_temple: { x: 58 / 600, y: 246 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 544 / 600, y: 248 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                left_earpiece: { x: 18 / 600, y: 280 / 600 },
+	                right_earpiece: { x: 583 / 600, y: 304 / 600 },
 	            },
 	        };
 	    }
@@ -173,11 +254,12 @@
 	var draw_quad_1 = __webpack_require__(3);
 	var draw_with_blur_1 = __webpack_require__(4);
 	var DEBUG = false;
-	var DEBUG_MOUSE = false;
-	var MAX_DRAG_DISTANCE_SQ = 0.05 * 0.05;
-	var MAX_MOVE_DISTANCE_SQ = 0.25 * 0.25;
+	var DEBUG_MOUSE = true;
+	var HANDLE_RADIUS = 0.1;
+	var MOVE_RADIUS = 0.25;
+	var MAX_DRAG_DISTANCE_SQ = HANDLE_RADIUS * HANDLE_RADIUS;
+	var MAX_MOVE_DISTANCE_SQ = MOVE_RADIUS * MOVE_RADIUS;
 	var TIME_REMOVE_HANDLES = 3000;
-	var HANDLE_RADIUS = 4;
 	var MOVEMENT_RATIO = 0.5;
 	var ImageHandleKind;
 	(function (ImageHandleKind) {
@@ -190,6 +272,7 @@
 	    options.host.appendChild(cvs);
 	    cvs.width = options.host.clientWidth;
 	    cvs.height = options.host.clientHeight;
+	    cvs.style.width = '100%';
 	    var w = cvs.width | 600;
 	    var h = cvs.height | 600;
 	    // // Oversize to be able to see better
@@ -257,6 +340,8 @@
 	        var rect = cvs.getBoundingClientRect();
 	        var xm = 0;
 	        var ym = 0;
+	        var xm2 = null;
+	        var ym2 = null;
 	        if (e.clientX != null) {
 	            xm = e.clientX - rect.left;
 	            ym = e.clientY - rect.top;
@@ -264,28 +349,52 @@
 	        else if (e.touches != null) {
 	            xm = e.touches[0].clientX - rect.left;
 	            ym = e.touches[0].clientY - rect.top;
+	            if (e.touches[1]) {
+	                if (DEBUG_MOUSE) {
+	                    console.log('2 FINGER');
+	                }
+	                xm2 = e.touches[1].clientX - rect.left;
+	                ym2 = e.touches[1].clientY - rect.top;
+	            }
 	        }
 	        if (DEBUG_MOUSE) {
-	            console.log('Mouse Down', xm, ym, e);
+	            console.log('Mouse Down', xm, ym, xm2, ym2, e);
 	        }
 	        var xh = xm / w;
 	        var yh = ym / h;
 	        var nearest = userHandles.map(function (s) { return ({ handle: s, distanceSq: (s.x - xh) * (s.x - xh) + (s.y - yh) * (s.y - yh) }); }).sort(function (a, b) { return a.distanceSq - b.distanceSq; })[0];
-	        return { xh: xh, yh: yh, nearest: nearest };
+	        var xh2 = xm2 ? xm2 / w : null;
+	        var yh2 = ym2 ? ym2 / h : null;
+	        return { xh: xh, yh: yh, nearest: nearest, xh2: xh2, yh2: yh2 };
 	    };
 	    var isMovingProduct = false;
 	    var isDraggingNearest = false;
 	    var xh_start = 0;
 	    var yh_start = 0;
 	    var hNearest = null;
+	    var xh2_start = 0;
+	    var yh2_start = 0;
 	    var dragEnd = function () { return isDraggingNearest = isMovingProduct = false; };
 	    var dragStart = function (e) {
-	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest;
+	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest, xh2 = _a.xh2, yh2 = _a.yh2;
 	        xh_start = xh;
 	        yh_start = yh;
+	        xh2_start = xh2;
+	        yh2_start = yh2;
 	        userHandles.forEach(function (s) {
 	            s.x_start = s.x;
 	            s.y_start = s.y;
+	            s.nearestTouch = 0;
+	            if (xh2 != null) {
+	                var xhd = s.x - xh;
+	                var yhd = s.y - yh;
+	                var xhd2 = s.x - xh2;
+	                var yhd2 = s.y - yh2;
+	                if (xhd * xhd + yhd * yhd
+	                    > xhd2 * xhd2 + yhd2 * yhd2) {
+	                    s.nearestTouch = 1;
+	                }
+	            }
 	        });
 	        if (nearest.distanceSq < MAX_DRAG_DISTANCE_SQ) {
 	            isDraggingNearest = true;
@@ -306,7 +415,7 @@
 	            return;
 	        }
 	        // Move the nearest handle
-	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh;
+	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest, xh2 = _a.xh2, yh2 = _a.yh2;
 	        if (isDraggingNearest) {
 	            var s = hNearest;
 	            s.x = s.x_start + (xh - xh_start) * MOVEMENT_RATIO;
@@ -314,17 +423,37 @@
 	        }
 	        else if (isMovingProduct) {
 	            userHandles.forEach(function (s) {
-	                s.x = s.x_start + (xh - xh_start) * MOVEMENT_RATIO;
-	                s.y = s.y_start + (yh - yh_start) * MOVEMENT_RATIO;
+	                var xhd = xh - xh_start;
+	                var yhd = yh - yh_start;
+	                var xhd2 = xh2 - xh2_start;
+	                var yhd2 = yh2 - yh2_start;
+	                if (xh2 == null) {
+	                    s.x = s.x_start + xhd * MOVEMENT_RATIO;
+	                    s.y = s.y_start + yhd * MOVEMENT_RATIO;
+	                }
+	                else {
+	                    // Each point moves with nearest finger
+	                    if (s.nearestTouch === 0) {
+	                        s.x = s.x_start + xhd * MOVEMENT_RATIO;
+	                        s.y = s.y_start + yhd * MOVEMENT_RATIO;
+	                    }
+	                    else {
+	                        s.x = s.x_start + xhd2 * MOVEMENT_RATIO;
+	                        s.y = s.y_start + yhd2 * MOVEMENT_RATIO;
+	                    }
+	                }
 	            });
 	        }
 	        refresh();
-	        // if (DEBUG_MOUSE) {
 	        drawHandles(ctx, w, h, userHandles, '#0000FF');
 	        if (isDraggingNearest) {
 	            drawHandles(ctx, w, h, [hNearest], '#00FF00');
 	        }
-	        // }
+	        else {
+	            var xMain = userHandles.reduce(function (out, s) { return out += s.x; }, 0) / userHandles.length;
+	            var yMain = userHandles.reduce(function (out, s) { return out += s.y; }, 0) / userHandles.length;
+	            drawMainHandle(ctx, w, h, xMain, yMain, '#00FF00');
+	        }
 	        var removeHandles = function () {
 	            clearTimeout(timeoutId);
 	            timeoutId = setTimeout(function () {
@@ -519,6 +648,9 @@
 	        drawHandles(ctx, w, h, stretches.map(function (s) { return s.target; }), '#FF00FF');
 	        drawHandles(ctx, w, h, handles, '#FF0000');
 	        drawHandles(ctx, w, h, handleTargets, '#00FF00');
+	        var xMain = stretches.reduce(function (out, s) { return out += s.target.x; }, 0) / stretches.length;
+	        var yMain = stretches.reduce(function (out, s) { return out += s.target.y; }, 0) / stretches.length;
+	        drawMainHandle(ctx, w, h, xMain, yMain, '#00FF00');
 	    }
 	    ctx.restore();
 	}
@@ -546,22 +678,36 @@
 	    return (dty - dsy) / dsx;
 	}
 	function drawHandles(ctx, w, h, handles, color) {
-	    var radius = HANDLE_RADIUS;
+	    var radius = HANDLE_RADIUS * w;
+	    var thickness = 2;
 	    for (var k in handles) {
 	        log('draw handle');
 	        var handle = handles[k];
+	        ctx.globalAlpha = 0.5;
+	        ctx.lineWidth = thickness;
+	        ctx.strokeStyle = color;
 	        ctx.beginPath();
-	        // ctx.lineWidth = 1;
-	        // ctx.strokeStyle = color;
-	        // ctx.moveTo(handle.x * w - len, handle.y * h);
-	        // ctx.lineTo(handle.x * w + len, handle.y * h);
-	        // ctx.moveTo(handle.x * w, handle.y * h - len);
-	        // ctx.lineTo(handle.x * w, handle.y * h + len);
-	        // ctx.stroke();
+	        ctx.moveTo(handle.x * w - radius, handle.y * h);
+	        ctx.lineTo(handle.x * w + radius, handle.y * h);
+	        ctx.stroke();
+	        ctx.beginPath();
+	        ctx.moveTo(handle.x * w, handle.y * h - radius);
+	        ctx.lineTo(handle.x * w, handle.y * h + radius);
+	        ctx.stroke();
+	        ctx.beginPath();
 	        ctx.fillStyle = color;
-	        ctx.arc(handle.x * w, handle.y * h, radius, 0, Math.PI * 2, false);
+	        ctx.arc(handle.x * w, handle.y * h, radius * 0.25, 0, Math.PI * 2, false);
 	        ctx.fill();
+	        ctx.globalAlpha = 1;
 	    }
+	}
+	function drawMainHandle(ctx, w, h, x, y, color) {
+	    ctx.beginPath();
+	    ctx.globalAlpha = 1;
+	    ctx.strokeStyle = color;
+	    ctx.arc(x * w, y * h, MOVE_RADIUS * w, 0, Math.PI * 2, false);
+	    ctx.stroke();
+	    ctx.globalAlpha = 1;
 	}
 	function drawImageSection(ctx, image, handle, handleTargets) {
 	}

@@ -8,6 +8,7 @@ export interface ImageHandle {
     y: number;
     x_start?: number;
     y_start?: number;
+    nearestTouch?: number;
     kind?: ImageHandleKind;
 }
 export interface ImageHandles {
