@@ -20,6 +20,14 @@ export interface UserFittingOptions {
     userImageHandles: ImageHandles;
     productImageUrl: string;
     productImageHandles: ImageHandles;
+    onMove?: (moveArgs: MoveArgs) => void;
+    shouldMoveProductHandles?: boolean;
+    moveHandleRadius?: number;
+}
+export interface MoveArgs {
+    imageHandles: ImageHandles;
+    imageHandles_old: ImageHandles;
+    delta_productImageHandles: ImageHandles;
 }
 export interface Rect {
     y_top: number;
@@ -32,8 +40,10 @@ export interface SkewRect {
     y_bottom_left: number;
     y_top_right: number;
     y_bottom_right: number;
-    x_left: number;
-    x_right: number;
+    x_bottom_left: number;
+    x_bottom_right: number;
+    x_top_left: number;
+    x_top_right: number;
 }
 export interface TransformCell {
     source: Rect;

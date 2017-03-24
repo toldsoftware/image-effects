@@ -2,15 +2,16 @@ import { drawTriangle } from './draw-triangle';
 import { drawQuad } from './draw-quad';
 import { drawWithEdgeBlur } from './draw-with-blur';
 import { drawWithShade } from './draw-with-shade';
-import { DrawingBuffer } from './drawing-buffer';
+import { DrawingBuffer, DrawingContext } from './drawing-buffer';
+import { drawImagesAligned, RelativePosition, ImagePosition } from './draw-images-aligned';
 
 const DEBUG = false;
-const DEBUG_MOUSE = true;
+const DEBUG_MOUSE = false;
 
 const HANDLE_RADIUS = 0.1;
-const MOVE_RADIUS = 0.25;
+const DEFAULT_MOVE_HANDLE_RADIUS = 0.25;
 const MAX_DRAG_DISTANCE_SQ = HANDLE_RADIUS * HANDLE_RADIUS;
-const MAX_MOVE_DISTANCE_SQ = MOVE_RADIUS * MOVE_RADIUS;
+// const MAX_MOVE_DISTANCE_SQ = DEFAULT_MOVE_HANDLE_RADIUS * DEFAULT_MOVE_HANDLE_RADIUS;
 const TIME_REMOVE_HANDLES = 3000;
 
 const MOVEMENT_RATIO = 0.5;
@@ -38,6 +39,15 @@ export interface UserFittingOptions {
     userImageHandles: ImageHandles;
     productImageUrl: string;
     productImageHandles: ImageHandles;
+    onMove?: (moveArgs: MoveArgs) => void;
+    shouldMoveProductHandles?: boolean;
+    moveHandleRadius?: number;
+}
+
+export interface MoveArgs {
+    imageHandles: ImageHandles;
+    imageHandles_old: ImageHandles;
+    delta_productImageHandles: ImageHandles;
 }
 
 export interface Rect {
@@ -52,8 +62,11 @@ export interface SkewRect {
     y_bottom_left: number;
     y_top_right: number;
     y_bottom_right: number;
-    x_left: number;
-    x_right: number;
+
+    x_bottom_left: number;
+    x_bottom_right: number;
+    x_top_left: number;
+    x_top_right: number;
 }
 
 export interface TransformCell {
@@ -61,14 +74,14 @@ export interface TransformCell {
     target: SkewRect;
 }
 
-interface DrawContext {
-    width: number;
-    height: number;
-    context: CanvasRenderingContext2D;
-}
-
-
 export function setupUserFitting(options: UserFittingOptions) {
+
+    const shouldMoveProductHandles = options.shouldMoveProductHandles;
+    const moveHandleRadius = options.moveHandleRadius || DEFAULT_MOVE_HANDLE_RADIUS;
+    const MAX_MOVE_DISTANCE_SQ = moveHandleRadius * moveHandleRadius;
+
+    options.productImageHandles = clone(options.productImageHandles);
+
     let cvs = document.createElement('canvas');
     options.host.appendChild(cvs);
     cvs.width = options.host.clientWidth;
@@ -139,24 +152,82 @@ export function setupUserFitting(options: UserFittingOptions) {
         c.height = h = cvs.height;
         //}
 
+        // Debug - Draw with shadows
         // if (productImage_adjusted == null) {
+
         //     let buffer = new DrawingBuffer(productImage.width, productImage.height);
         //     drawWithShade(buffer.context, productImage.width, productImage.height, '#000000', 0.15, ctx2 => {
         //         ctx2.drawImage(productImage, 0, 0, productImage.width, productImage.height);
         //     });
 
         //     productImage_adjusted = buffer.canvas;
+
+
         // }
 
-        refreshUserFitting(c, userImage, productImage, options);
+        // // Resize for aspect ratio
+        // if (productImage_adjusted == null) {
+
+        //     // const aspectRatio = productImage.width / productImage.height;
+        //     const aspectRatio = 1;
+
+        //     let buffer = new DrawingBuffer(productImage.width, aspectRatio * productImage.height);
+        //     // drawWithShade(buffer.context, productImage.width, productImage.height, '#000000', 0.15, ctx2 => {
+        //     //     ctx2.drawImage(productImage, 0, 0, productImage.width, productImage.height);
+        //     // });
+        //     buffer.context.drawImage(productImage, 0, 0, productImage.width, productImage.height);
+        //     productImage_adjusted = buffer.canvas;
+
+
+        //     for (let key in options.productImageHandles) {
+        //         if (options.productImageHandles.hasOwnProperty(key)) {
+        //             const handle = options.productImageHandles[key];
+
+        //             log('handle y before', handle.y, aspectRatio);
+        //             handle.y = handle.y / aspectRatio;
+        //             log('handle y after', handle.y, aspectRatio);
+        //         }
+        //     }
+        // }
+
+        // TODO: Re-implement dragging
+        const actual = refreshUserFitting_simple(c, userImage, productImage, options, shouldDrawHandles);
+
+        // if (!isDraggingNearest && !isMovingProduct) {
+        // handles_move[0].x = actual.a.u;
+        // handles_move[0].y = actual.a.v;
+        // handles_move[1].x = actual.b.u;
+        // handles_move[1].y = actual.b.v;
+        // }
+
+        // refreshUserFitting_simple(c, userImage, productImage_adjusted, options);
+
+        if (shouldMoveProductHandles) {
+            ctx.globalAlpha = 0.75;
+            ctx.drawImage(productImage_adjusted, 0, 0, w, h);
+            ctx.globalAlpha = 1;
+
+            drawHandles(ctx, w, h, options.productImageHandles, '#FFFF00');
+        }
     };
 
     setTimeout(refresh, 250);
 
-    let userHandles: ImageHandle[] = [];
+    let handles_move: ImageHandle[] = [];
 
-    for (let k in options.userImageHandles) {
-        userHandles.push(options.userImageHandles[k]);
+    if (!shouldMoveProductHandles) {
+        for (let k in options.userImageHandles) {
+            if (options.productImageHandles[k]) {
+                handles_move.push(options.userImageHandles[k]);
+            }
+        }
+    } else {
+        // Move the product handles instead
+        for (let k in options.userImageHandles) {
+            if (options.productImageHandles[k]) {
+                handles_move.push(options.productImageHandles[k]);
+            }
+        }
     }
 
     let getHandleInfo = (e: any) => {
@@ -188,7 +259,7 @@ export function setupUserFitting(options: UserFittingOptions) {
         }
         let xh = xm / w;
         let yh = ym / h;
-        let nearest = userHandles.map(s => ({ handle: s, distanceSq: (s.x - xh) * (s.x - xh) + (s.y - yh) * (s.y - yh) })).sort((a, b) => a.distanceSq - b.distanceSq)[0];
+        let nearest = handles_move.map(s => ({ handle: s, distanceSq: (s.x - xh) * (s.x - xh) + (s.y - yh) * (s.y - yh) })).sort((a, b) => a.distanceSq - b.distanceSq)[0];
         let xh2 = xm2 ? xm2 / w : null;
         let yh2 = ym2 ? ym2 / h : null;
 
@@ -197,6 +268,7 @@ export function setupUserFitting(options: UserFittingOptions) {
     };
 
 
+    let shouldDrawHandles = false;
     let isMovingProduct = false;
     let isDraggingNearest = false;
     let xh_start = 0;
@@ -205,9 +277,39 @@ export function setupUserFitting(options: UserFittingOptions) {
     let xh2_start = 0;
     let yh2_start = 0;
 
+    // let userHandles_old = clone(options.userImageHandles);
+    // let productHandles_old = clone(options.productImageHandles);
 
-    let dragEnd = () => isDraggingNearest = isMovingProduct = false;
+    let dragEnd = () => {
+        unsubscribe();
+        isDraggingNearest = isMovingProduct = false;
+
+        // // Report move
+        // if (options.onMove) {
+
+        //     const userHandles_new = clone(options.userImageHandles);
+        //     const delta_productImageHandles = {} as ImageHandles;
+
+        //     // for (let k in userHandles_new) {
+        //     //     if (userHandles_new.hasOwnProperty(k)) {
+        //     //         delta_productImageHandles[k] = 
+        //     //     }
+        //     // }
+
+        //     options.onMove({
+        //         imageHandles: userHandles_new,
+        //         imageHandles_old: userHandles_old,
+        //         delta_productImageHandles
+        //     });
+
+        //     userHandles_old = clone(options.userImageHandles);
+        //     productHandles_old = clone(options.productImageHandles);
+        // }
+    };
+
     let dragStart = (e: any) => {
+        subscribe();
+
         let {xh, yh, nearest, xh2, yh2} = getHandleInfo(e);
 
         xh_start = xh;
@@ -215,7 +317,7 @@ export function setupUserFitting(options: UserFittingOptions) {
         xh2_start = xh2;
         yh2_start = yh2;
 
-        userHandles.forEach(s => {
+        handles_move.forEach(s => {
             s.x_start = s.x;
             s.y_start = s.y;
 
@@ -242,14 +344,14 @@ export function setupUserFitting(options: UserFittingOptions) {
 
         if (DEBUG_MOUSE) {
             console.log('isDraggingPoint', isDraggingNearest, 'isMovingProduct', isMovingProduct);
-            drawHandles(ctx, w, h, userHandles, '#00FF00');
+            drawHandles(ctx, w, h, handles_move, '#00FF00');
             drawHandles(ctx, w, h, [nearest.handle], '#FF0000');
         }
     };
 
     let timeoutId = -1;
 
-    let dragMove = (e: any) => {
+    let dragMove = (e: MouseEvent) => {
         if (!isDraggingNearest && !isMovingProduct) { return; }
 
         // Move the nearest handle
@@ -260,7 +362,7 @@ export function setupUserFitting(options: UserFittingOptions) {
             s.x = s.x_start + (xh - xh_start) * MOVEMENT_RATIO;
             s.y = s.y_start + (yh - yh_start) * MOVEMENT_RATIO;
         } else if (isMovingProduct) {
-            userHandles.forEach(s => {
+            handles_move.forEach(s => {
 
                 let xhd = xh - xh_start;
                 let yhd = yh - yh_start;
@@ -286,20 +388,22 @@ export function setupUserFitting(options: UserFittingOptions) {
 
         refresh();
 
-        drawHandles(ctx, w, h, userHandles, '#0000FF');
-        if (isDraggingNearest) {
-            drawHandles(ctx, w, h, [hNearest], '#00FF00');
-        }
-        else {
-            let xMain = userHandles.reduce((out, s) => out += s.x, 0) / userHandles.length;
-            let yMain = userHandles.reduce((out, s) => out += s.y, 0) / userHandles.length;
-            drawMainHandle(ctx, w, h, xMain, yMain, '#00FF00');
-        }
+        shouldDrawHandles = true;
+        // drawHandles(ctx, w, h, handles_move, '#0000FF');
+        // if (isDraggingNearest) {
+        //     drawHandles(ctx, w, h, [hNearest], '#00FF00');
+        // }
+        // else {
+        //     let xMain = handles_move.reduce((out, s) => out += s.x, 0) / handles_move.length;
+        //     let yMain = handles_move.reduce((out, s) => out += s.y, 0) / handles_move.length;
+        //     drawMainHandle(ctx, w, h, xMain, yMain, '#00FF00');
+        // }
 
         let removeHandles = () => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
                 if (isDraggingNearest) { removeHandles(); return; }
+                shouldDrawHandles = false;
                 refresh();
             }, TIME_REMOVE_HANDLES);
         };
@@ -307,15 +411,30 @@ export function setupUserFitting(options: UserFittingOptions) {
         removeHandles();
 
         e.preventDefault();
+        e.stopPropagation();
         return false;
     };
 
     cvs.addEventListener('mousedown', dragStart);
     cvs.addEventListener('touchstart', dragStart);
-    window.addEventListener('mouseup', dragEnd);
-    window.addEventListener('touchend', dragEnd);
-    window.addEventListener('mousemove', dragMove);
-    window.addEventListener('touchmove', dragMove);
+
+    const subscribe = () => {
+        // console.log('subscribe');
+
+        window.addEventListener('mouseup', dragEnd);
+        window.addEventListener('touchend', dragEnd);
+        window.addEventListener('mousemove', dragMove);
+        window.addEventListener('touchmove', dragMove, { passive: false } as any);
+    };
+
+    const unsubscribe = () => {
+        // console.log('unsubscribe');
+
+        window.removeEventListener('mouseup', dragEnd);
+        window.removeEventListener('touchend', dragEnd);
+        window.removeEventListener('mousemove', dragMove);
+        window.removeEventListener('touchmove', dragMove);
+    };
 }
 
 function log(message: any, ...args: any[]) {
@@ -324,8 +443,42 @@ function log(message: any, ...args: any[]) {
     }
 }
 
+function clone(obj: any) {
+    const c = {} as any;
+    for (let k in obj) {
+        if (obj.hasOwnProperty(k)) {
+            if (typeof obj[k] === 'object') {
+                c[k] = clone(obj[k]);
+            } else {
+                c[k] = obj[k];
+            }
+        }
+    }
 
-function refreshUserFitting(c: DrawContext, userImage: HTMLImageElement, productImage: HTMLImageElement | HTMLCanvasElement, options: UserFittingOptions) {
+    return c;
+}
+
+function refreshUserFitting_simple(c: DrawingContext, userImage: HTMLImageElement, productImage: HTMLImageElement | HTMLCanvasElement, options: UserFittingOptions, shouldDrawHandles: boolean) {
+    // log('refresh');
+
+    c.context.clearRect(0, 0, c.width, c.height);
+    const actualPosition = drawImagesAligned(c, [toSimpleImageInfo(userImage, options.userImageHandles), toSimpleImageInfo(productImage, options.productImageHandles)], shouldDrawHandles);
+    return actualPosition;
+}
+
+function toSimpleImageInfo(image: HTMLImageElement | HTMLCanvasElement, imageHandles: ImageHandles): ImagePosition {
+    const aHandle = imageHandles['left_temple'];
+    const bHandle = imageHandles['right_temple'];
+
+    return {
+        image,
+        a: { u: aHandle.x, v: aHandle.y },
+        b: { u: bHandle.x, v: bHandle.y },
+    };
+}
+
+
+function refreshUserFitting_old(c: DrawingContext, userImage: HTMLImageElement, productImage: HTMLImageElement | HTMLCanvasElement, options: UserFittingOptions) {
     log('refresh');
 
     c.context.clearRect(0, 0, c.width, c.height);
@@ -333,7 +486,7 @@ function refreshUserFitting(c: DrawContext, userImage: HTMLImageElement, product
     drawImageAligned(c, productImage, options.productImageHandles, options.userImageHandles);
 }
 
-function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasElement, handles: ImageHandles, handleTargets: ImageHandles) {
+function drawImageAligned(c: DrawingContext, image: HTMLImageElement | HTMLCanvasElement, handles: ImageHandles, handleTargets: ImageHandles) {
     let ctx = c.context;
     let w = c.width;
     let h = c.height;
@@ -351,7 +504,7 @@ function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasEl
 
     let gaps = handles_stretches.map((s, i) => ({ i: i, prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }));
     gaps.sort((a, b) => b.xDistance - a.xDistance);
-    // log('gaps', gaps);
+    log('gaps', gaps);
 
     let widest = gaps[0];
 
@@ -382,7 +535,7 @@ function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasEl
     );
 
     ctx.save();
-    ctx.rotate(mainAngle);
+    // ctx.rotate(mainAngle);
 
     // Calculate y_top and y_bottom for each stretch handle
     let stretches = handles_stretches.map(s => {
@@ -395,9 +548,32 @@ function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasEl
         return {
             source: s.source,
             target_orig: s.target,
-            target: rotate(s.target, -mainAngle),
-            y_top_target: rotateY(s.target.x, targetTop, -mainAngle),
-            y_bottom_target: rotateY(s.target.x, targetBottom, -mainAngle),
+            target: s.target,
+            x_top_target: s.target.x + rotateX(0, targetTop - s.target.y, mainAngle),
+            x_bottom_target: s.target.x + rotateX(0, targetBottom - s.target.y, mainAngle),
+            y_top_target: s.target.y + rotateY(0, targetTop - s.target.y, mainAngle),
+            y_bottom_target: s.target.y + rotateY(0, targetBottom - s.target.y, mainAngle),
+
+            // target: s.target,
+            // x_top_target: s.target.x,
+            // x_bottom_target: s.target.x,
+            // y_top_target: targetTop,
+            // y_bottom_target: targetBottom,
+
+            // target: rotate(s.target, mainAngle),
+            // x_top_target: rotateX(s.target.x, targetTop, mainAngle),
+            // x_bottom_target: rotateX(s.target.x, targetBottom, mainAngle),
+            // y_top_target: rotateY(s.target.x, targetTop, mainAngle),
+            // y_bottom_target: rotateY(s.target.x, targetBottom, mainAngle),
+
+
+            // target: rotate(s.target, -mainAngle),
+            // x_top_target: rotateX(s.target.x, targetTop, -mainAngle),
+            // x_bottom_target: rotateX(s.target.x, targetBottom, -mainAngle),
+            // y_top_target: rotateY(s.target.x, targetTop, -mainAngle),
+            // y_bottom_target: rotateY(s.target.x, targetBottom, -mainAngle),
+            // y_top_target: targetTop,
+            // y_bottom_target: targetBottom,
         };
     });
 
@@ -409,9 +585,9 @@ function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasEl
     gaps.reverse();
     let columnOrder: number[] = gaps.filter(g => g.xDistance > 0).map(g => g.i);
 
-    for (let ico = 0; ico < columnCount; ico++) {
+    for (let ic = 0; ic < columnCount; ic++) {
 
-        let i = columnOrder[ico];
+        let i = columnOrder[ic];
         let sourceTop = 0;
         let sourceBottom = 1;
 
@@ -424,37 +600,50 @@ function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasEl
         let targetLeft = left.target.x;
         let targetRight = right.target.x;
 
-        // Calculate the y scale
-        let target_top_left = left.y_top_target;
-        let target_bottom_left = left.y_bottom_target;
+        let x_top_left_target = left.x_top_target;
+        let x_bottom_left_target = left.x_bottom_target;
+        let x_top_right_target = right.x_top_target;
+        let x_bottom_right_target = right.x_bottom_target;
 
-        let target_top_right = right.y_top_target;
-        let target_bottom_right = right.y_bottom_target;
+        // Calculate the y scale
+        let y_top_left_target = left.y_top_target;
+        let y_bottom_left_target = left.y_bottom_target;
+        let y_top_right_target = right.y_top_target;
+        let y_bottom_right_target = right.y_bottom_target;
 
         if (i === 0) {
             let changeRatio = (sourceRight - 0) / (sourceRight - sourceLeft);
             let targetPerSourceScale = (targetRight - targetLeft) / (sourceRight - sourceLeft);
-            targetLeft = targetRight - targetPerSourceScale * sourceRight;
+            // targetLeft = targetRight - targetPerSourceScale * sourceRight;
+            x_top_left_target = x_top_right_target - targetPerSourceScale * sourceRight;
+            x_bottom_left_target = x_bottom_right_target - targetPerSourceScale * sourceRight;
+
             sourceLeft = 0;
 
-            target_top_left = target_top_right - changeRatio * (target_top_right - target_top_left);
-            target_bottom_left = target_bottom_right - changeRatio * (target_bottom_right - target_bottom_left);
+            y_top_left_target = y_top_right_target - changeRatio * (y_top_right_target - y_top_left_target);
+            y_bottom_left_target = y_bottom_right_target - changeRatio * (y_bottom_right_target - y_bottom_left_target);
         }
 
         if (i === columnCount - 1) {
             let changeRatio = (1 - sourceLeft) / (sourceRight - sourceLeft);
             let tScale = (targetRight - targetLeft) / (sourceRight - sourceLeft);
-            targetRight = targetLeft + tScale * (1 - sourceLeft);
+            // targetRight = targetLeft + tScale * (1 - sourceLeft);
+            x_top_right_target = x_top_left_target + tScale * (1 - sourceLeft);
+            x_bottom_right_target = x_bottom_left_target + tScale * (1 - sourceLeft);
+
             sourceRight = 1;
 
-            target_top_right = target_top_left + changeRatio * (target_top_right - target_top_left);
-            target_bottom_right = target_bottom_left + changeRatio * (target_bottom_right - target_bottom_left);
+            y_top_right_target = y_top_left_target + changeRatio * (y_top_right_target - y_top_left_target);
+            y_bottom_right_target = y_bottom_left_target + changeRatio * (y_bottom_right_target - y_bottom_left_target);
         }
 
 
         grid.push([{
             source: { x_left: sourceLeft, x_right: sourceRight, y_top: sourceTop, y_bottom: sourceBottom },
-            target: { x_left: targetLeft, x_right: targetRight, y_top_left: target_top_left, y_bottom_left: target_bottom_left, y_top_right: target_top_right, y_bottom_right: target_bottom_right }
+            target: {
+                x_top_left: x_top_left_target, x_bottom_left: x_bottom_left_target, x_top_right: x_top_right_target, x_bottom_right: x_bottom_right_target,
+                y_top_left: y_top_left_target, y_bottom_left: y_bottom_left_target, y_top_right: y_top_right_target, y_bottom_right: y_bottom_right_target
+            }
         }]);
 
 
@@ -520,10 +709,10 @@ function drawImageAligned(c: DrawContext, image: HTMLImageElement | HTMLCanvasEl
 
         drawWithEdgeBlur(ctx, w, h, (ctx2) => {
             drawQuad(ctx2, image,
-                w * g.target.x_left, h * g.target.y_top_left,
-                w * g.target.x_right, h * g.target.y_top_right,
-                w * g.target.x_right, h * g.target.y_bottom_right,
-                w * g.target.x_left, h * g.target.y_bottom_left,
+                w * g.target.x_top_left, h * g.target.y_top_left,
+                w * g.target.x_top_right, h * g.target.y_top_right,
+                w * g.target.x_bottom_right, h * g.target.y_bottom_right,
+                w * g.target.x_bottom_left, h * g.target.y_bottom_left,
                 image.width * g.source.x_left, image.height * g.source.y_top,
                 image.width * g.source.x_right, image.height * g.source.y_top,
                 image.width * g.source.x_right, image.height * g.source.y_bottom,
@@ -572,6 +761,12 @@ function rotate(handle: ImageHandle, angle: number): ImageHandle {
     };
 }
 
+function rotateX(x: number, y: number, angle: number): number {
+    let x_rotate = x * Math.cos(angle) - y * Math.sin(angle);
+    return x_rotate;
+}
+
+
 function rotateY(x: number, y: number, angle: number): number {
     let y_rotate = x * Math.sin(angle) + y * Math.cos(angle);
 
@@ -603,15 +798,15 @@ function drawHandles(ctx: CanvasRenderingContext2D, w: number, h: number, handle
         ctx.lineWidth = thickness;
         ctx.strokeStyle = color;
 
-        ctx.beginPath();
-        ctx.moveTo(handle.x * w - radius, handle.y * h);
-        ctx.lineTo(handle.x * w + radius, handle.y * h);
-        ctx.stroke();
+        // ctx.beginPath();
+        // ctx.moveTo(handle.x * w - radius, handle.y * h);
+        // ctx.lineTo(handle.x * w + radius, handle.y * h);
+        // ctx.stroke();
 
-        ctx.beginPath();
-        ctx.moveTo(handle.x * w, handle.y * h - radius);
-        ctx.lineTo(handle.x * w, handle.y * h + radius);
-        ctx.stroke();
+        // ctx.beginPath();
+        // ctx.moveTo(handle.x * w, handle.y * h - radius);
+        // ctx.lineTo(handle.x * w, handle.y * h + radius);
+        // ctx.stroke();
 
         ctx.beginPath();
         ctx.fillStyle = color;
@@ -624,12 +819,13 @@ function drawHandles(ctx: CanvasRenderingContext2D, w: number, h: number, handle
 }
 
 function drawMainHandle(ctx: CanvasRenderingContext2D, w: number, h: number, x: number, y: number, color: string) {
-    ctx.beginPath();
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = color;
-    ctx.arc(x * w, y * h, MOVE_RADIUS * w, 0, Math.PI * 2, false);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
+    // ctx.beginPath();
+    // ctx.globalAlpha = 1;
+    // ctx.strokeStyle = color;
+    // ctx.arc(x * w, y * h, MOVE_RADIUS * w, 0, Math.PI * 2, false);
+    // //   ctx.arc(x * w, y * h, 0.01 * MOVE_RADIUS * w, 0, Math.PI * 2, false);
+    // ctx.stroke();
+    // ctx.globalAlpha = 1;
 }
 
 function drawImageSection(ctx: CanvasRenderingContext2D, image: HTMLImageElement, handle: ImageHandles, handleTargets: ImageHandles) {

@@ -66,39 +66,54 @@
 	    var u1 = getUser(1);
 	    var u2 = getUser(2);
 	    var u3 = getUser(3);
+	    var u4 = getUser(4);
+	    // addTest(p1, { userImageUrl: p0.productImageUrl, userImageHandles: p0.productImageHandles });
+	    addTest(p0, { userImageUrl: p1.productImageUrl, userImageHandles: p1.productImageHandles }, 1);
+	    addTest(p0, { userImageUrl: p2.productImageUrl, userImageHandles: p2.productImageHandles }, 1);
+	    addTest(p0, { userImageUrl: p3.productImageUrl, userImageHandles: p3.productImageHandles }, 1);
+	    addTest(p0, { userImageUrl: p4.productImageUrl, userImageHandles: p4.productImageHandles }, 1);
+	    addTest(p0, { userImageUrl: p5.productImageUrl, userImageHandles: p5.productImageHandles }, 1);
 	    addTest(p0, u0);
 	    addTest(p0, u1);
 	    addTest(p0, u2);
 	    addTest(p0, u3);
+	    addTest(p0, u4);
 	    addTest(p1, u0);
 	    addTest(p1, u1);
 	    addTest(p1, u2);
 	    addTest(p1, u3);
+	    addTest(p1, u4);
 	    addTest(p2, u0);
 	    addTest(p2, u1);
 	    addTest(p2, u2);
 	    addTest(p2, u3);
+	    addTest(p2, u4);
 	    addTest(p3, u0);
 	    addTest(p3, u1);
 	    addTest(p3, u2);
 	    addTest(p3, u3);
+	    addTest(p3, u4);
 	    addTest(p4, u0);
 	    addTest(p4, u1);
 	    addTest(p4, u2);
 	    addTest(p4, u3);
+	    addTest(p4, u4);
 	    addTest(p5, u0);
 	    addTest(p5, u1);
 	    addTest(p5, u2);
 	    addTest(p5, u3);
+	    addTest(p5, u4);
 	    var productJsonObj = __assign({}, p1.productImageHandles);
-	    delete (productJsonObj.center);
+	    delete (productJsonObj['center']);
 	    console.log('product json', JSON.stringify(productJsonObj));
 	    var userJsonObj = __assign({}, u0.userImageHandles);
 	    console.log('user json', JSON.stringify(userJsonObj));
 	    console.log('test END');
 	}
 	exports.test = test;
-	function addTest(product, user) {
+	function addTest(product, user, moveHandleRadius, shouldMoveProductHandles) {
+	    if (moveHandleRadius === void 0) { moveHandleRadius = 0.25; }
+	    if (shouldMoveProductHandles === void 0) { shouldMoveProductHandles = false; }
 	    var host = document.createElement('div');
 	    document.body.appendChild(host);
 	    host.style.width = '300px';
@@ -109,79 +124,65 @@
 	        userImageUrl: user.userImageUrl,
 	        userImageHandles: user.userImageHandles,
 	        productImageUrl: product.productImageUrl,
-	        productImageHandles: product.productImageHandles
+	        productImageHandles: product.productImageHandles,
+	        shouldMoveProductHandles: shouldMoveProductHandles,
+	        moveHandleRadius: moveHandleRadius
 	    });
 	}
 	function getProduct(i) {
-	    if (i === 1) {
+	    if (i === 0) {
 	        return {
-	            productImageUrl: '/productImage01.png',
+	            productImageUrl: '/sizeGuide.png',
 	            productImageHandles: {
-	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
-	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
-	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	                left_temple: { x: 25 / 300, y: 60 / 150, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 275 / 300, y: 60 / 150, kind: S.ImageHandleKind.RotateAndScale },
+	            },
+	        };
+	    }
+	    else if (i === 1) {
+	        return {
+	            productImageUrl: '/productImageB01.png',
+	            productImageHandles: {
+	                // left_temple: { x: 295 / 1936, y: 300 / 685, kind: S.ImageHandleKind.RotateAndScale },
+	                // right_temple: { x: 1667 / 1936, y: 300 / 685, kind: S.ImageHandleKind.RotateAndScale },
+	                left_temple: { x: 295 / 1936, y: 252 / 685, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 1667 / 1936, y: 248 / 685, kind: S.ImageHandleKind.RotateAndScale },
 	            },
 	        };
 	    }
 	    else if (i === 2) {
 	        return {
-	            productImageUrl: '/productImage02.png',
+	            productImageUrl: '/productImageB02.png',
 	            productImageHandles: {
-	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
-	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
-	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	                left_temple: { x: 58 / 600, y: 220 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 228 / 600, kind: S.ImageHandleKind.RotateAndScale },
 	            },
 	        };
 	    }
 	    else if (i === 3) {
 	        return {
-	            productImageUrl: '/productImage03.png',
+	            productImageUrl: '/productImageB03.png',
 	            productImageHandles: {
-	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
-	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
-	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	                left_temple: { x: 48 / 600, y: 223 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 231 / 600, kind: S.ImageHandleKind.RotateAndScale },
 	            },
 	        };
 	    }
 	    else if (i === 4) {
 	        return {
-	            productImageUrl: '/productImage04.png',
+	            productImageUrl: '/productImageB04.png',
 	            productImageHandles: {
-	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
-	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
-	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	                left_temple: { x: 58 / 600, y: 213 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 546 / 600, y: 221 / 600, kind: S.ImageHandleKind.RotateAndScale },
 	            },
 	        };
 	    }
 	    else if (i === 5) {
 	        return {
-	            productImageUrl: '/productImage05.png',
+	            productImageUrl: '/productImageB05.png',
 	            productImageHandles: {
-	                center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
-	                left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                left_earpiece: { x: 10 / 600, y: 286 / 600 },
-	                right_earpiece: { x: 595 / 600, y: 294 / 600 },
-	            },
-	        };
-	    }
-	    else {
-	        return {
-	            productImageUrl: '/productImage.png',
-	            productImageHandles: {
-	                center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Anchor },
-	                left_temple: { x: 58 / 600, y: 246 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                right_temple: { x: 544 / 600, y: 248 / 600, kind: S.ImageHandleKind.RotateAndScale },
-	                left_earpiece: { x: 18 / 600, y: 280 / 600 },
-	                right_earpiece: { x: 583 / 600, y: 304 / 600 },
+	                left_temple: { x: 50 / 600, y: 220 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	                right_temple: { x: 542 / 600, y: 224 / 600, kind: S.ImageHandleKind.RotateAndScale },
 	            },
 	        };
 	    }
@@ -189,49 +190,225 @@
 	function getUser(i) {
 	    if (i === 0) {
 	        return {
-	            userImageUrl: '/userImage00.png',
+	            userImageUrl: '/userImage02.jpg',
 	            userImageHandles: {
-	                left_temple: { x: 168 / 600, y: 260 / 600 },
-	                right_temple: { x: 438 / 600, y: 260 / 600 },
-	                left_earpiece: { x: 145 / 600, y: 278 / 600 },
-	                right_earpiece: { x: 460 / 600, y: 292 / 600 },
+	                left_temple: { x: 184 / 600, y: 230 / 600 },
+	                right_temple: { x: 393 / 600, y: 199 / 600 },
 	            },
 	        };
 	    }
 	    else if (i === 1) {
 	        return {
-	            userImageUrl: '/userImage01.png',
+	            userImageUrl: '/userModelWoman_600sq.jpg',
 	            userImageHandles: {
-	                left_temple: { x: 62 / 220, y: 78 / 215 },
-	                right_temple: { x: 135 / 220, y: 78 / 215 },
-	                left_earpiece: { x: 59 / 220, y: 83 / 215 },
-	                right_earpiece: { x: 138 / 220, y: 78 / 215 },
+	                left_temple: { x: 222 / 600, y: 241 / 600 },
+	                right_temple: { x: 401 / 600, y: 246 / 600 },
 	            },
 	        };
 	    }
 	    else if (i === 2) {
 	        return {
-	            userImageUrl: '/userImage02.jpg',
+	            userImageUrl: '/userModelMan_600sq.jpg',
 	            userImageHandles: {
-	                left_temple: { x: 170 / 600, y: 217 / 600 },
-	                right_temple: { x: 406 / 600, y: 184 / 600 },
-	                left_earpiece: { x: 150 / 600, y: 255 / 600 },
-	                right_earpiece: { x: 425 / 600, y: 205 / 600 },
+	                left_temple: { x: 200 / 600, y: 223 / 600 },
+	                right_temple: { x: 413 / 600, y: 224 / 600 },
 	            },
 	        };
 	    }
-	    else {
+	    else if (i === 3) {
+	        return {
+	            userImageUrl: '/userModelChild_600sq.jpg',
+	            userImageHandles: {
+	                left_temple: { x: 206 / 600, y: 270 / 600 },
+	                right_temple: { x: 426 / 600, y: 267 / 600 },
+	            },
+	        };
+	    }
+	    else if (i === 4) {
 	        return {
 	            userImageUrl: '/userImage03.png',
 	            userImageHandles: {
-	                left_temple: { x: 243 / 600, y: 316 / 600 },
-	                right_temple: { x: 452 / 600, y: 207 / 600 },
-	                left_earpiece: { x: 161 / 600, y: 282 / 600 },
-	                right_earpiece: { x: 413 / 600, y: 186 / 600 },
+	                left_temple: { x: 268 / 600, y: 316 / 600 },
+	                right_temple: { x: 438 / 600, y: 227 / 600 },
 	            },
 	        };
 	    }
 	}
+	// function getUser(i: number) {
+	//     if (i === 0) {
+	//         return {
+	//             userImageUrl: '/userImage00.png',
+	//             userImageHandles: {
+	//                 left_temple: { x: 168 / 600, y: 260 / 600 },
+	//                 right_temple: { x: 438 / 600, y: 260 / 600 },
+	//                 left_earpiece: { x: 145 / 600, y: 278 / 600 },
+	//                 right_earpiece: { x: 460 / 600, y: 292 / 600 },
+	//             },
+	//         };
+	//     } else if (i === 1) {
+	//         return {
+	//             userImageUrl: '/userImage01.png',
+	//             userImageHandles: {
+	//                 left_temple: { x: 62 / 220, y: 78 / 215 },
+	//                 right_temple: { x: 135 / 220, y: 78 / 215 },
+	//                 left_earpiece: { x: 59 / 220, y: 83 / 215 },
+	//                 right_earpiece: { x: 138 / 220, y: 78 / 215 },
+	//             },
+	//         };
+	//     } else if (i === 2) {
+	//         return {
+	//             userImageUrl: '/userImage02.jpg',
+	//             userImageHandles: {
+	//                 left_temple: { x: 184 / 600, y: 230 / 600 },
+	//                 right_temple: { x: 393 / 600, y: 199 / 600 },
+	//                 // left_temple: { x: 185 / 600, y: 235 / 600 },
+	//                 // right_temple: { x: 394 / 600, y: 204 / 600 },
+	//                 left_earpiece: { x: 150 / 600, y: 255 / 600 },
+	//                 right_earpiece: { x: 425 / 600, y: 205 / 600 },
+	//             },
+	//         };
+	//     } else {
+	//         return {
+	//             userImageUrl: '/userImage03.png',
+	//             userImageHandles: {
+	//                 left_temple: { x: 243 / 600, y: 316 / 600 },
+	//                 right_temple: { x: 452 / 600, y: 207 / 600 },
+	//                 left_earpiece: { x: 161 / 600, y: 282 / 600 },
+	//                 right_earpiece: { x: 413 / 600, y: 186 / 600 },
+	//             },
+	//         };
+	//     }
+	// }
+	// function getProduct(i: number) {
+	//     if (i === 1) {
+	//         return {
+	//             productImageUrl: '/productImageB01.png',
+	//             productImageHandles: {
+	//                 left_temple: { x: 0.1, y: 0.1, kind: S.ImageHandleKind.RotateAndScale },
+	//                 right_temple: { x: 0.9, y: 0.1, kind: S.ImageHandleKind.RotateAndScale },
+	//             },
+	//         };
+	//         // return {
+	//         //     productImageUrl: '/sampleCutout.png',
+	//         //     productImageHandles: {
+	//         //         // center: { x: 670 / 1348, y: 129 / 462, kind: S.ImageHandleKind.Anchor },
+	//         //         // left_temple: { x: 35 / 1348, y: 121 / 462, kind: S.ImageHandleKind.RotateAndScale },
+	//         //         // right_temple: { x: 1296 / 1348, y: 114 / 462, kind: S.ImageHandleKind.RotateAndScale },
+	//         //         // center: { x: 0.5, y: 0.1, kind: S.ImageHandleKind.Anchor },
+	//         //         left_temple: { x: 0.1, y: 0.1, kind: S.ImageHandleKind.RotateAndScale },
+	//         //         right_temple: { x: 0.9, y: 0.1, kind: S.ImageHandleKind.RotateAndScale },
+	//         //     },
+	//         // };
+	//         // return {
+	//         //     productImageUrl: '/productImage01.png',
+	//         //     productImageHandles: {
+	//         //         center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	//         //         left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//         //         right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//         //         left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	//         //         right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	//         //     },
+	//         // };
+	//     } else if (i === 2) {
+	//         return {
+	//             productImageUrl: '/productImage02.png',
+	//             productImageHandles: {
+	//                 center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	//                 left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	//                 right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	//             },
+	//         };
+	//     } else if (i === 3) {
+	//         return {
+	//             productImageUrl: '/productImage03.png',
+	//             productImageHandles: {
+	//                 center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	//                 left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	//                 right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	//             },
+	//         };
+	//     } else if (i === 4) {
+	//         return {
+	//             productImageUrl: '/productImage04.png',
+	//             productImageHandles: {
+	//                 center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	//                 left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	//                 right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	//             },
+	//         };
+	//     } else if (i === 5) {
+	//         return {
+	//             productImageUrl: '/productImage05.png',
+	//             productImageHandles: {
+	//                 center: { x: 296 / 600, y: 267 / 600, kind: S.ImageHandleKind.Anchor },
+	//                 left_temple: { x: 58 / 600, y: 243 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 right_temple: { x: 546 / 600, y: 251 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 left_earpiece: { x: 10 / 600, y: 286 / 600 },
+	//                 right_earpiece: { x: 595 / 600, y: 294 / 600 },
+	//             },
+	//         };
+	//     } else {
+	//         return {
+	//             productImageUrl: '/productImage.png',
+	//             productImageHandles: {
+	//                 center: { x: 300 / 600, y: 254 / 600, kind: S.ImageHandleKind.Anchor },
+	//                 left_temple: { x: 58 / 600, y: 246 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 right_temple: { x: 544 / 600, y: 248 / 600, kind: S.ImageHandleKind.RotateAndScale },
+	//                 left_earpiece: { x: 18 / 600, y: 280 / 600 },
+	//                 right_earpiece: { x: 583 / 600, y: 304 / 600 },
+	//             },
+	//         };
+	//     }
+	// }
+	// function getUser(i: number) {
+	//     if (i === 0) {
+	//         return {
+	//             userImageUrl: '/userImage00.png',
+	//             userImageHandles: {
+	//                 left_temple: { x: 168 / 600, y: 260 / 600 },
+	//                 right_temple: { x: 438 / 600, y: 260 / 600 },
+	//                 left_earpiece: { x: 145 / 600, y: 278 / 600 },
+	//                 right_earpiece: { x: 460 / 600, y: 292 / 600 },
+	//             },
+	//         };
+	//     } else if (i === 1) {
+	//         return {
+	//             userImageUrl: '/userImage01.png',
+	//             userImageHandles: {
+	//                 left_temple: { x: 62 / 220, y: 78 / 215 },
+	//                 right_temple: { x: 135 / 220, y: 78 / 215 },
+	//                 left_earpiece: { x: 59 / 220, y: 83 / 215 },
+	//                 right_earpiece: { x: 138 / 220, y: 78 / 215 },
+	//             },
+	//         };
+	//     } else if (i === 2) {
+	//         return {
+	//             userImageUrl: '/userImage02.jpg',
+	//             userImageHandles: {
+	//                 left_temple: { x: 170 / 600, y: 217 / 600 },
+	//                 right_temple: { x: 406 / 600, y: 184 / 600 },
+	//                 left_earpiece: { x: 150 / 600, y: 255 / 600 },
+	//                 right_earpiece: { x: 425 / 600, y: 205 / 600 },
+	//             },
+	//         };
+	//     } else {
+	//         return {
+	//             userImageUrl: '/userImage03.png',
+	//             userImageHandles: {
+	//                 left_temple: { x: 243 / 600, y: 316 / 600 },
+	//                 right_temple: { x: 452 / 600, y: 207 / 600 },
+	//                 left_earpiece: { x: 161 / 600, y: 282 / 600 },
+	//                 right_earpiece: { x: 413 / 600, y: 186 / 600 },
+	//             },
+	//         };
+	//     }
+	// }
 	test();
 
 
@@ -253,12 +430,13 @@
 	"use strict";
 	var draw_quad_1 = __webpack_require__(3);
 	var draw_with_blur_1 = __webpack_require__(4);
+	var draw_images_aligned_1 = __webpack_require__(6);
 	var DEBUG = false;
-	var DEBUG_MOUSE = true;
+	var DEBUG_MOUSE = false;
 	var HANDLE_RADIUS = 0.1;
-	var MOVE_RADIUS = 0.25;
+	var DEFAULT_MOVE_HANDLE_RADIUS = 0.25;
 	var MAX_DRAG_DISTANCE_SQ = HANDLE_RADIUS * HANDLE_RADIUS;
-	var MAX_MOVE_DISTANCE_SQ = MOVE_RADIUS * MOVE_RADIUS;
+	// const MAX_MOVE_DISTANCE_SQ = DEFAULT_MOVE_HANDLE_RADIUS * DEFAULT_MOVE_HANDLE_RADIUS;
 	var TIME_REMOVE_HANDLES = 3000;
 	var MOVEMENT_RATIO = 0.5;
 	var ImageHandleKind;
@@ -268,6 +446,10 @@
 	    ImageHandleKind[ImageHandleKind["Anchor"] = 2] = "Anchor";
 	})(ImageHandleKind = exports.ImageHandleKind || (exports.ImageHandleKind = {}));
 	function setupUserFitting(options) {
+	    var shouldMoveProductHandles = options.shouldMoveProductHandles;
+	    var moveHandleRadius = options.moveHandleRadius || DEFAULT_MOVE_HANDLE_RADIUS;
+	    var MAX_MOVE_DISTANCE_SQ = moveHandleRadius * moveHandleRadius;
+	    options.productImageHandles = clone(options.productImageHandles);
 	    var cvs = document.createElement('canvas');
 	    options.host.appendChild(cvs);
 	    cvs.width = options.host.clientWidth;
@@ -322,6 +504,7 @@
 	        c.width = w = cvs.width;
 	        c.height = h = cvs.height;
 	        //}
+	        // Debug - Draw with shadows
 	        // if (productImage_adjusted == null) {
 	        //     let buffer = new DrawingBuffer(productImage.width, productImage.height);
 	        //     drawWithShade(buffer.context, productImage.width, productImage.height, '#000000', 0.15, ctx2 => {
@@ -329,12 +512,57 @@
 	        //     });
 	        //     productImage_adjusted = buffer.canvas;
 	        // }
-	        refreshUserFitting(c, userImage, productImage, options);
+	        // // Resize for aspect ratio
+	        // if (productImage_adjusted == null) {
+	        //     // const aspectRatio = productImage.width / productImage.height;
+	        //     const aspectRatio = 1;
+	        //     let buffer = new DrawingBuffer(productImage.width, aspectRatio * productImage.height);
+	        //     // drawWithShade(buffer.context, productImage.width, productImage.height, '#000000', 0.15, ctx2 => {
+	        //     //     ctx2.drawImage(productImage, 0, 0, productImage.width, productImage.height);
+	        //     // });
+	        //     buffer.context.drawImage(productImage, 0, 0, productImage.width, productImage.height);
+	        //     productImage_adjusted = buffer.canvas;
+	        //     for (let key in options.productImageHandles) {
+	        //         if (options.productImageHandles.hasOwnProperty(key)) {
+	        //             const handle = options.productImageHandles[key];
+	        //             log('handle y before', handle.y, aspectRatio);
+	        //             handle.y = handle.y / aspectRatio;
+	        //             log('handle y after', handle.y, aspectRatio);
+	        //         }
+	        //     }
+	        // }
+	        // TODO: Re-implement dragging
+	        var actual = refreshUserFitting_simple(c, userImage, productImage, options, shouldDrawHandles);
+	        // if (!isDraggingNearest && !isMovingProduct) {
+	        // handles_move[0].x = actual.a.u;
+	        // handles_move[0].y = actual.a.v;
+	        // handles_move[1].x = actual.b.u;
+	        // handles_move[1].y = actual.b.v;
+	        // }
+	        // refreshUserFitting_simple(c, userImage, productImage_adjusted, options);
+	        if (shouldMoveProductHandles) {
+	            ctx.globalAlpha = 0.75;
+	            ctx.drawImage(productImage_adjusted, 0, 0, w, h);
+	            ctx.globalAlpha = 1;
+	            drawHandles(ctx, w, h, options.productImageHandles, '#FFFF00');
+	        }
 	    };
 	    setTimeout(refresh, 250);
-	    var userHandles = [];
-	    for (var k in options.userImageHandles) {
-	        userHandles.push(options.userImageHandles[k]);
+	    var handles_move = [];
+	    if (!shouldMoveProductHandles) {
+	        for (var k in options.userImageHandles) {
+	            if (options.productImageHandles[k]) {
+	                handles_move.push(options.userImageHandles[k]);
+	            }
+	        }
+	    }
+	    else {
+	        // Move the product handles instead
+	        for (var k in options.userImageHandles) {
+	            if (options.productImageHandles[k]) {
+	                handles_move.push(options.productImageHandles[k]);
+	            }
+	        }
 	    }
 	    var getHandleInfo = function (e) {
 	        var rect = cvs.getBoundingClientRect();
@@ -362,11 +590,12 @@
 	        }
 	        var xh = xm / w;
 	        var yh = ym / h;
-	        var nearest = userHandles.map(function (s) { return ({ handle: s, distanceSq: (s.x - xh) * (s.x - xh) + (s.y - yh) * (s.y - yh) }); }).sort(function (a, b) { return a.distanceSq - b.distanceSq; })[0];
+	        var nearest = handles_move.map(function (s) { return ({ handle: s, distanceSq: (s.x - xh) * (s.x - xh) + (s.y - yh) * (s.y - yh) }); }).sort(function (a, b) { return a.distanceSq - b.distanceSq; })[0];
 	        var xh2 = xm2 ? xm2 / w : null;
 	        var yh2 = ym2 ? ym2 / h : null;
 	        return { xh: xh, yh: yh, nearest: nearest, xh2: xh2, yh2: yh2 };
 	    };
+	    var shouldDrawHandles = false;
 	    var isMovingProduct = false;
 	    var isDraggingNearest = false;
 	    var xh_start = 0;
@@ -374,14 +603,37 @@
 	    var hNearest = null;
 	    var xh2_start = 0;
 	    var yh2_start = 0;
-	    var dragEnd = function () { return isDraggingNearest = isMovingProduct = false; };
+	    // let userHandles_old = clone(options.userImageHandles);
+	    // let productHandles_old = clone(options.productImageHandles);
+	    var dragEnd = function () {
+	        unsubscribe();
+	        isDraggingNearest = isMovingProduct = false;
+	        // // Report move
+	        // if (options.onMove) {
+	        //     const userHandles_new = clone(options.userImageHandles);
+	        //     const delta_productImageHandles = {} as ImageHandles;
+	        //     // for (let k in userHandles_new) {
+	        //     //     if (userHandles_new.hasOwnProperty(k)) {
+	        //     //         delta_productImageHandles[k] = 
+	        //     //     }
+	        //     // }
+	        //     options.onMove({
+	        //         imageHandles: userHandles_new,
+	        //         imageHandles_old: userHandles_old,
+	        //         delta_productImageHandles
+	        //     });
+	        //     userHandles_old = clone(options.userImageHandles);
+	        //     productHandles_old = clone(options.productImageHandles);
+	        // }
+	    };
 	    var dragStart = function (e) {
+	        subscribe();
 	        var _a = getHandleInfo(e), xh = _a.xh, yh = _a.yh, nearest = _a.nearest, xh2 = _a.xh2, yh2 = _a.yh2;
 	        xh_start = xh;
 	        yh_start = yh;
 	        xh2_start = xh2;
 	        yh2_start = yh2;
-	        userHandles.forEach(function (s) {
+	        handles_move.forEach(function (s) {
 	            s.x_start = s.x;
 	            s.y_start = s.y;
 	            s.nearestTouch = 0;
@@ -405,7 +657,7 @@
 	        }
 	        if (DEBUG_MOUSE) {
 	            console.log('isDraggingPoint', isDraggingNearest, 'isMovingProduct', isMovingProduct);
-	            drawHandles(ctx, w, h, userHandles, '#00FF00');
+	            drawHandles(ctx, w, h, handles_move, '#00FF00');
 	            drawHandles(ctx, w, h, [nearest.handle], '#FF0000');
 	        }
 	    };
@@ -422,7 +674,7 @@
 	            s.y = s.y_start + (yh - yh_start) * MOVEMENT_RATIO;
 	        }
 	        else if (isMovingProduct) {
-	            userHandles.forEach(function (s) {
+	            handles_move.forEach(function (s) {
 	                var xhd = xh - xh_start;
 	                var yhd = yh - yh_start;
 	                var xhd2 = xh2 - xh2_start;
@@ -445,15 +697,16 @@
 	            });
 	        }
 	        refresh();
-	        drawHandles(ctx, w, h, userHandles, '#0000FF');
-	        if (isDraggingNearest) {
-	            drawHandles(ctx, w, h, [hNearest], '#00FF00');
-	        }
-	        else {
-	            var xMain = userHandles.reduce(function (out, s) { return out += s.x; }, 0) / userHandles.length;
-	            var yMain = userHandles.reduce(function (out, s) { return out += s.y; }, 0) / userHandles.length;
-	            drawMainHandle(ctx, w, h, xMain, yMain, '#00FF00');
-	        }
+	        shouldDrawHandles = true;
+	        // drawHandles(ctx, w, h, handles_move, '#0000FF');
+	        // if (isDraggingNearest) {
+	        //     drawHandles(ctx, w, h, [hNearest], '#00FF00');
+	        // }
+	        // else {
+	        //     let xMain = handles_move.reduce((out, s) => out += s.x, 0) / handles_move.length;
+	        //     let yMain = handles_move.reduce((out, s) => out += s.y, 0) / handles_move.length;
+	        //     drawMainHandle(ctx, w, h, xMain, yMain, '#00FF00');
+	        // }
 	        var removeHandles = function () {
 	            clearTimeout(timeoutId);
 	            timeoutId = setTimeout(function () {
@@ -461,19 +714,31 @@
 	                    removeHandles();
 	                    return;
 	                }
+	                shouldDrawHandles = false;
 	                refresh();
 	            }, TIME_REMOVE_HANDLES);
 	        };
 	        removeHandles();
 	        e.preventDefault();
+	        e.stopPropagation();
 	        return false;
 	    };
 	    cvs.addEventListener('mousedown', dragStart);
 	    cvs.addEventListener('touchstart', dragStart);
-	    window.addEventListener('mouseup', dragEnd);
-	    window.addEventListener('touchend', dragEnd);
-	    window.addEventListener('mousemove', dragMove);
-	    window.addEventListener('touchmove', dragMove);
+	    var subscribe = function () {
+	        // console.log('subscribe');
+	        window.addEventListener('mouseup', dragEnd);
+	        window.addEventListener('touchend', dragEnd);
+	        window.addEventListener('mousemove', dragMove);
+	        window.addEventListener('touchmove', dragMove, { passive: false });
+	    };
+	    var unsubscribe = function () {
+	        // console.log('unsubscribe');
+	        window.removeEventListener('mouseup', dragEnd);
+	        window.removeEventListener('touchend', dragEnd);
+	        window.removeEventListener('mousemove', dragMove);
+	        window.removeEventListener('touchmove', dragMove);
+	    };
 	}
 	exports.setupUserFitting = setupUserFitting;
 	function log(message) {
@@ -485,7 +750,36 @@
 	        console.log.apply(console, [message].concat(args));
 	    }
 	}
-	function refreshUserFitting(c, userImage, productImage, options) {
+	function clone(obj) {
+	    var c = {};
+	    for (var k in obj) {
+	        if (obj.hasOwnProperty(k)) {
+	            if (typeof obj[k] === 'object') {
+	                c[k] = clone(obj[k]);
+	            }
+	            else {
+	                c[k] = obj[k];
+	            }
+	        }
+	    }
+	    return c;
+	}
+	function refreshUserFitting_simple(c, userImage, productImage, options, shouldDrawHandles) {
+	    // log('refresh');
+	    c.context.clearRect(0, 0, c.width, c.height);
+	    var actualPosition = draw_images_aligned_1.drawImagesAligned(c, [toSimpleImageInfo(userImage, options.userImageHandles), toSimpleImageInfo(productImage, options.productImageHandles)], shouldDrawHandles);
+	    return actualPosition;
+	}
+	function toSimpleImageInfo(image, imageHandles) {
+	    var aHandle = imageHandles['left_temple'];
+	    var bHandle = imageHandles['right_temple'];
+	    return {
+	        image: image,
+	        a: { u: aHandle.x, v: aHandle.y },
+	        b: { u: bHandle.x, v: bHandle.y },
+	    };
+	}
+	function refreshUserFitting_old(c, userImage, productImage, options) {
 	    log('refresh');
 	    c.context.clearRect(0, 0, c.width, c.height);
 	    c.context.drawImage(userImage, 0, 0, c.width, c.height);
@@ -504,7 +798,7 @@
 	    var handles_stretches = handlesMerged.filter(function (x) { return x.source.kind !== ImageHandleKind.Anchor; });
 	    var gaps = handles_stretches.map(function (s, i) { return ({ i: i, prev: s, next: handles_stretches[i + 1], xDistance: (handles_stretches[i + 1] || { source: { x: s.source.x } }).source.x - s.source.x }); });
 	    gaps.sort(function (a, b) { return b.xDistance - a.xDistance; });
-	    // log('gaps', gaps);
+	    log('gaps', gaps);
 	    var widest = gaps[0];
 	    var targetScale = (widest.next.target.x - widest.prev.target.x) /
 	        (widest.next.source.x - widest.prev.source.x);
@@ -519,7 +813,7 @@
 	    // mainAngle = 0;
 	    log('targetScale', targetScale, 'y_delta_source', y_delta_source, 'x_delta_source', x_delta_source, 'y_delta_target', y_delta_target, 'x_delta_target', x_delta_target, 'sourceAngle', sourceAngle * 180 / Math.PI, 'targetAngle', targetAngle * 180 / Math.PI, 'mainAngle', mainAngle * 180 / Math.PI);
 	    ctx.save();
-	    ctx.rotate(mainAngle);
+	    // ctx.rotate(mainAngle);
 	    // Calculate y_top and y_bottom for each stretch handle
 	    var stretches = handles_stretches.map(function (s) {
 	        var sourceLeft_yRatioFromTop = s.source.y;
@@ -529,17 +823,19 @@
 	        return {
 	            source: s.source,
 	            target_orig: s.target,
-	            target: rotate(s.target, -mainAngle),
-	            y_top_target: rotateY(s.target.x, targetTop, -mainAngle),
-	            y_bottom_target: rotateY(s.target.x, targetBottom, -mainAngle),
+	            target: s.target,
+	            x_top_target: s.target.x + rotateX(0, targetTop - s.target.y, mainAngle),
+	            x_bottom_target: s.target.x + rotateX(0, targetBottom - s.target.y, mainAngle),
+	            y_top_target: s.target.y + rotateY(0, targetTop - s.target.y, mainAngle),
+	            y_bottom_target: s.target.y + rotateY(0, targetBottom - s.target.y, mainAngle),
 	        };
 	    });
 	    var columnCount = stretches.length - 1;
 	    var grid = [];
 	    gaps.reverse();
 	    var columnOrder = gaps.filter(function (g) { return g.xDistance > 0; }).map(function (g) { return g.i; });
-	    var _loop_1 = function (ico) {
-	        var i = columnOrder[ico];
+	    var _loop_1 = function (ic) {
+	        var i = columnOrder[ic];
 	        var sourceTop = 0;
 	        var sourceBottom = 1;
 	        var left = stretches[i];
@@ -548,30 +844,41 @@
 	        var sourceRight = right.source.x;
 	        var targetLeft = left.target.x;
 	        var targetRight = right.target.x;
+	        var x_top_left_target = left.x_top_target;
+	        var x_bottom_left_target = left.x_bottom_target;
+	        var x_top_right_target = right.x_top_target;
+	        var x_bottom_right_target = right.x_bottom_target;
 	        // Calculate the y scale
-	        var target_top_left = left.y_top_target;
-	        var target_bottom_left = left.y_bottom_target;
-	        var target_top_right = right.y_top_target;
-	        var target_bottom_right = right.y_bottom_target;
+	        var y_top_left_target = left.y_top_target;
+	        var y_bottom_left_target = left.y_bottom_target;
+	        var y_top_right_target = right.y_top_target;
+	        var y_bottom_right_target = right.y_bottom_target;
 	        if (i === 0) {
 	            var changeRatio = (sourceRight - 0) / (sourceRight - sourceLeft);
 	            var targetPerSourceScale = (targetRight - targetLeft) / (sourceRight - sourceLeft);
-	            targetLeft = targetRight - targetPerSourceScale * sourceRight;
+	            // targetLeft = targetRight - targetPerSourceScale * sourceRight;
+	            x_top_left_target = x_top_right_target - targetPerSourceScale * sourceRight;
+	            x_bottom_left_target = x_bottom_right_target - targetPerSourceScale * sourceRight;
 	            sourceLeft = 0;
-	            target_top_left = target_top_right - changeRatio * (target_top_right - target_top_left);
-	            target_bottom_left = target_bottom_right - changeRatio * (target_bottom_right - target_bottom_left);
+	            y_top_left_target = y_top_right_target - changeRatio * (y_top_right_target - y_top_left_target);
+	            y_bottom_left_target = y_bottom_right_target - changeRatio * (y_bottom_right_target - y_bottom_left_target);
 	        }
 	        if (i === columnCount - 1) {
 	            var changeRatio = (1 - sourceLeft) / (sourceRight - sourceLeft);
 	            var tScale = (targetRight - targetLeft) / (sourceRight - sourceLeft);
-	            targetRight = targetLeft + tScale * (1 - sourceLeft);
+	            // targetRight = targetLeft + tScale * (1 - sourceLeft);
+	            x_top_right_target = x_top_left_target + tScale * (1 - sourceLeft);
+	            x_bottom_right_target = x_bottom_left_target + tScale * (1 - sourceLeft);
 	            sourceRight = 1;
-	            target_top_right = target_top_left + changeRatio * (target_top_right - target_top_left);
-	            target_bottom_right = target_bottom_left + changeRatio * (target_bottom_right - target_bottom_left);
+	            y_top_right_target = y_top_left_target + changeRatio * (y_top_right_target - y_top_left_target);
+	            y_bottom_right_target = y_bottom_left_target + changeRatio * (y_bottom_right_target - y_bottom_left_target);
 	        }
 	        grid.push([{
 	                source: { x_left: sourceLeft, x_right: sourceRight, y_top: sourceTop, y_bottom: sourceBottom },
-	                target: { x_left: targetLeft, x_right: targetRight, y_top_left: target_top_left, y_bottom_left: target_bottom_left, y_top_right: target_top_right, y_bottom_right: target_bottom_right }
+	                target: {
+	                    x_top_left: x_top_left_target, x_bottom_left: x_bottom_left_target, x_top_right: x_top_right_target, x_bottom_right: x_bottom_right_target,
+	                    y_top_left: y_top_left_target, y_bottom_left: y_bottom_left_target, y_top_right: y_top_right_target, y_bottom_right: y_bottom_right_target
+	                }
 	            }]);
 	        var g = grid[grid.length - 1][0];
 	        log('Source:', g.source);
@@ -625,12 +932,12 @@
 	        //     image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG
 	        // );
 	        draw_with_blur_1.drawWithEdgeBlur(ctx, w, h, function (ctx2) {
-	            draw_quad_1.drawQuad(ctx2, image, w * g.target.x_left, h * g.target.y_top_left, w * g.target.x_right, h * g.target.y_top_right, w * g.target.x_right, h * g.target.y_bottom_right, w * g.target.x_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
+	            draw_quad_1.drawQuad(ctx2, image, w * g.target.x_top_left, h * g.target.y_top_left, w * g.target.x_top_right, h * g.target.y_top_right, w * g.target.x_bottom_right, h * g.target.y_bottom_right, w * g.target.x_bottom_left, h * g.target.y_bottom_left, image.width * g.source.x_left, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_top, image.width * g.source.x_right, image.height * g.source.y_bottom, image.width * g.source.x_left, image.height * g.source.y_bottom, DEBUG);
 	        });
 	        // break;
 	    };
-	    for (var ico = 0; ico < columnCount; ico++) {
-	        _loop_1(ico);
+	    for (var ic = 0; ic < columnCount; ic++) {
+	        _loop_1(ic);
 	    }
 	    if (DEBUG) {
 	        stretches.forEach(function (s) {
@@ -663,6 +970,10 @@
 	        y: y_rotate,
 	    };
 	}
+	function rotateX(x, y, angle) {
+	    var x_rotate = x * Math.cos(angle) - y * Math.sin(angle);
+	    return x_rotate;
+	}
 	function rotateY(x, y, angle) {
 	    var y_rotate = x * Math.sin(angle) + y * Math.cos(angle);
 	    return y_rotate;
@@ -686,14 +997,14 @@
 	        ctx.globalAlpha = 0.5;
 	        ctx.lineWidth = thickness;
 	        ctx.strokeStyle = color;
-	        ctx.beginPath();
-	        ctx.moveTo(handle.x * w - radius, handle.y * h);
-	        ctx.lineTo(handle.x * w + radius, handle.y * h);
-	        ctx.stroke();
-	        ctx.beginPath();
-	        ctx.moveTo(handle.x * w, handle.y * h - radius);
-	        ctx.lineTo(handle.x * w, handle.y * h + radius);
-	        ctx.stroke();
+	        // ctx.beginPath();
+	        // ctx.moveTo(handle.x * w - radius, handle.y * h);
+	        // ctx.lineTo(handle.x * w + radius, handle.y * h);
+	        // ctx.stroke();
+	        // ctx.beginPath();
+	        // ctx.moveTo(handle.x * w, handle.y * h - radius);
+	        // ctx.lineTo(handle.x * w, handle.y * h + radius);
+	        // ctx.stroke();
 	        ctx.beginPath();
 	        ctx.fillStyle = color;
 	        ctx.arc(handle.x * w, handle.y * h, radius * 0.25, 0, Math.PI * 2, false);
@@ -702,12 +1013,13 @@
 	    }
 	}
 	function drawMainHandle(ctx, w, h, x, y, color) {
-	    ctx.beginPath();
-	    ctx.globalAlpha = 1;
-	    ctx.strokeStyle = color;
-	    ctx.arc(x * w, y * h, MOVE_RADIUS * w, 0, Math.PI * 2, false);
-	    ctx.stroke();
-	    ctx.globalAlpha = 1;
+	    // ctx.beginPath();
+	    // ctx.globalAlpha = 1;
+	    // ctx.strokeStyle = color;
+	    // ctx.arc(x * w, y * h, MOVE_RADIUS * w, 0, Math.PI * 2, false);
+	    // //   ctx.arc(x * w, y * h, 0.01 * MOVE_RADIUS * w, 0, Math.PI * 2, false);
+	    // ctx.stroke();
+	    // ctx.globalAlpha = 1;
 	}
 	function drawImageSection(ctx, image, handle, handleTargets) {
 	}
@@ -880,6 +1192,154 @@
 	    return DrawingBuffer;
 	}());
 	exports.DrawingBuffer = DrawingBuffer;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var drawing_buffer_1 = __webpack_require__(5);
+	var draw_with_blur_1 = __webpack_require__(4);
+	var buffer = new drawing_buffer_1.DrawingBuffer(1200, 1200);
+	function drawImagesAligned(cOrig, images, shouldDrawPosition) {
+	    // Anti-alias by drawing at a higher scale and resizing after merging
+	    // const scale = 600 / cOrig.width;
+	    var scale = 2;
+	    var wBuffer = scale * cOrig.width;
+	    var hBuffer = scale * cOrig.height;
+	    buffer.clear(wBuffer, hBuffer);
+	    var c = { context: buffer.context, width: wBuffer, height: hBuffer };
+	    // Draw the main image and get it's actual position
+	    var mainImage = images[0];
+	    var mainPosition = drawImageCentered(c, mainImage);
+	    // Draw each image
+	    for (var i = 0; i < images.length; i++) {
+	        if (i === 0) {
+	            continue;
+	        }
+	        drawImageAligned(c, images[i], mainPosition);
+	    }
+	    if (shouldDrawPosition) {
+	        drawPosition(c, mainPosition);
+	    }
+	    // Resize
+	    cOrig.context.drawImage(buffer.canvas, 0, 0, wBuffer, hBuffer, 0, 0, cOrig.width, cOrig.height);
+	    var actualPosition = {
+	        a: {
+	            u: mainPosition.a.u / scale,
+	            v: mainPosition.a.v / scale,
+	        },
+	        b: {
+	            u: mainPosition.b.u / scale,
+	            v: mainPosition.b.v / scale,
+	        }
+	    };
+	    return actualPosition;
+	}
+	exports.drawImagesAligned = drawImagesAligned;
+	function drawImageCentered(c, image) {
+	    var w = c.width;
+	    var h = c.height;
+	    var wImage = image.image.width;
+	    var hImage = image.image.height;
+	    var wScale = w / wImage;
+	    var hScale = h / hImage;
+	    // Fill
+	    // const scale = Math.max(wScale, hScale);
+	    // Fit Inside
+	    var scale = Math.min(wScale, hScale);
+	    // const scale = 1;
+	    var x = 0.5 * (w - scale * wImage);
+	    var y = 0.5 * (h - scale * hImage);
+	    c.context.drawImage(image.image, 0, 0, wImage, hImage, x, y, scale * wImage, scale * hImage);
+	    var mainPosition = {
+	        a: {
+	            u: (x + image.a.u * wImage * scale) / w,
+	            v: (y + image.a.v * hImage * scale) / h,
+	        },
+	        b: {
+	            u: (x + image.b.u * wImage * scale) / w,
+	            v: (y + image.b.v * hImage * scale) / h,
+	        },
+	    };
+	    return mainPosition;
+	}
+	function drawPosition(c, position) {
+	    drawPoint(c, position.a);
+	    drawPoint(c, position.b);
+	}
+	function drawPoint(c, point) {
+	    var ctx = c.context;
+	    var w = c.width;
+	    var h = c.height;
+	    var color = '#00FF00';
+	    var radius = 16;
+	    var thickness = 2;
+	    var u = point.u;
+	    var v = point.v;
+	    ctx.globalAlpha = 0.5;
+	    ctx.lineWidth = thickness;
+	    ctx.strokeStyle = color;
+	    // ctx.beginPath();
+	    // ctx.moveTo(u * w - radius, v * h);
+	    // ctx.lineTo(u * w + radius, v * h);
+	    // ctx.stroke();
+	    // ctx.beginPath();
+	    // ctx.moveTo(u * w, v * h - radius);
+	    // ctx.lineTo(u * w, v * h + radius);
+	    // ctx.stroke();
+	    ctx.beginPath();
+	    ctx.fillStyle = color;
+	    ctx.arc(u * w, v * h, radius, 0, Math.PI * 2, false);
+	    ctx.fill();
+	    ctx.globalAlpha = 1;
+	}
+	function drawImageAligned(c, image, position) {
+	    var uAxis = (position.a.u + position.b.u) * 0.5;
+	    var vAxis = (position.a.v + position.b.v) * 0.5;
+	    var uAxis_image = (image.a.u + image.b.u) * 0.5;
+	    var vAxis_image = (image.a.v + image.b.v) * 0.5;
+	    var ctx = c.context;
+	    var w = c.width;
+	    var h = c.height;
+	    var wImage = image.image.width;
+	    var hImage = image.image.height;
+	    var posDistance = getDistance(position);
+	    var imageDistance = getDistance(image);
+	    var uvScale = posDistance / imageDistance;
+	    var scale = uvScale * w / wImage;
+	    // console.log('distance', posDistance, imageDistance, scale, w, h, wImage, hImage);
+	    var posAngle = getAngle(position);
+	    var imageAngle = getAngle(image);
+	    var angle = posAngle - imageAngle;
+	    var xAxis = w * uAxis;
+	    var yAxis = h * vAxis;
+	    var xImage = xAxis - uAxis_image * scale * wImage;
+	    var yImage = yAxis - vAxis_image * scale * hImage;
+	    ctx.save();
+	    ctx.translate(uAxis * w, vAxis * h);
+	    ctx.rotate(angle);
+	    ctx.translate(-uAxis * w, -vAxis * h);
+	    // ctx.drawImage(image.image,
+	    //     0, 0, wImage, hImage,
+	    //     xImage, yImage, scale * wImage, scale * hImage
+	    // );
+	    draw_with_blur_1.drawWithEdgeBlur(ctx, w, h, function (ctx2) {
+	        ctx2.drawImage(image.image, 0, 0, wImage, hImage, xImage, yImage, scale * wImage, scale * hImage);
+	    });
+	    ctx.restore();
+	}
+	function getDistance(position) {
+	    var uDelta = position.a.u - position.b.u;
+	    var vDelta = position.a.v - position.b.v;
+	    return Math.sqrt(uDelta * uDelta + vDelta * vDelta);
+	}
+	function getAngle(position) {
+	    var uDelta = position.a.u - position.b.u;
+	    var vDelta = position.a.v - position.b.v;
+	    return Math.atan(vDelta / uDelta);
+	}
 
 
 /***/ }

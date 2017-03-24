@@ -1,3 +1,8 @@
+export interface DrawingContext {
+    width: number;
+    height: number;
+    context: CanvasRenderingContext2D;
+}
 export declare class DrawingBuffer {
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;

@@ -1,5 +1,11 @@
 const DEBUG = false;
 
+export interface DrawingContext {
+    width: number;
+    height: number;
+    context: CanvasRenderingContext2D;
+}
+
 export class DrawingBuffer {
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
