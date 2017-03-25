@@ -1,1 +1,1 @@
-export * from './user-fitting';
+export * from './user-fitting-simple';

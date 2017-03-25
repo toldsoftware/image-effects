@@ -39,16 +39,16 @@ export interface UserFittingOptions {
     userImageHandles: ImageHandles;
     productImageUrl: string;
     productImageHandles: ImageHandles;
-    onMove?: (moveArgs: MoveArgs) => void;
+    // onMove?: (moveArgs: MoveArgs) => void;
     shouldMoveProductHandles?: boolean;
     moveHandleRadius?: number;
 }
 
-export interface MoveArgs {
-    imageHandles: ImageHandles;
-    imageHandles_old: ImageHandles;
-    delta_productImageHandles: ImageHandles;
-}
+// export interface MoveArgs {
+//     imageHandles: ImageHandles;
+//     imageHandles_old: ImageHandles;
+//     delta_productImageHandles: ImageHandles;
+// }
 
 export interface Rect {
     y_top: number;
@@ -145,7 +145,7 @@ export function setupUserFitting(options: UserFittingOptions) {
             return;
         }
 
-        let c = { context: ctx, width: w || 600, height: h || 600 };
+        let c = { canvas: cvs, context: ctx, width: w || 600, height: h || 600 };
 
         // if (!DEBUG) {
         c.width = w = cvs.width;

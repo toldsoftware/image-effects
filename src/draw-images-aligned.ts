@@ -17,20 +17,19 @@ export interface ImagePosition extends RelativePosition {
 
 const buffer = new DrawingBuffer(1200, 1200);
 
-export function drawImagesAligned(cOrig: DrawingContext, images: ImagePosition[], shouldDrawPosition: boolean): RelativePosition {
+export function drawImagesAligned(cOrig: DrawingContext, images: ImagePosition[], shouldDrawPosition: boolean) {
 
     // Anti-alias by drawing at a higher scale and resizing after merging
     // const scale = 600 / cOrig.width;
-    const scale = 2;
-    const wBuffer = scale * cOrig.width;
-    const hBuffer = scale * cOrig.height;
+    const drawScale = 2;
+    const wBuffer = drawScale * cOrig.width;
+    const hBuffer = drawScale * cOrig.height;
     buffer.clear(wBuffer, hBuffer);
-
-    const c = { context: buffer.context, width: wBuffer, height: hBuffer };
+    const c = buffer;
 
     // Draw the main image and get it's actual position
     const mainImage = images[0];
-    const mainPosition = drawImageCentered(c, mainImage);
+    const {mainPosition, mainScale} = drawImageCentered(c, mainImage);
 
     // Draw each image
     for (let i = 0; i < images.length; i++) {
@@ -44,21 +43,21 @@ export function drawImagesAligned(cOrig: DrawingContext, images: ImagePosition[]
     // Resize
     cOrig.context.drawImage(buffer.canvas, 0, 0, wBuffer, hBuffer, 0, 0, cOrig.width, cOrig.height);
 
-    const actualPosition = {
-        a: {
-            u: mainPosition.a.u / scale,
-            v: mainPosition.a.v / scale,
-        },
-        b: {
-            u: mainPosition.b.u / scale,
-            v: mainPosition.b.v / scale,
-        }
-    };
-
-    return actualPosition;
+    // const actualPosition = {
+    //     a: {
+    //         u: mainPosition.a.u / scale,
+    //         v: mainPosition.a.v / scale,
+    //     },
+    //     b: {
+    //         u: mainPosition.b.u / scale,
+    //         v: mainPosition.b.v / scale,
+    //     }
+    // };
+    const actualPosition = mainPosition;
+    return { actualPosition, actualScale: mainScale * drawScale };
 }
 
-function drawImageCentered(c: DrawingContext, image: ImagePosition): RelativePosition {
+function drawImageCentered(c: DrawingContext, image: ImagePosition) {
     const w = c.width;
     const h = c.height;
 
@@ -72,44 +71,42 @@ function drawImageCentered(c: DrawingContext, image: ImagePosition): RelativePos
     // const scale = Math.max(wScale, hScale);
 
     // Fit Inside
-    const scale = Math.min(wScale, hScale);
+    const mainScale = Math.min(wScale, hScale);
 
     // const scale = 1;
 
-    const x = 0.5 * (w - scale * wImage);
-    const y = 0.5 * (h - scale * hImage);
+    const x = 0.5 * (w - mainScale * wImage);
+    const y = 0.5 * (h - mainScale * hImage);
 
     c.context.drawImage(image.image,
         0, 0, wImage, hImage,
-        x, y, scale * wImage, scale * hImage
+        x, y, mainScale * wImage, mainScale * hImage
     );
 
     const mainPosition = {
         a: {
-            u: (x + image.a.u * wImage * scale) / w,
-            v: (y + image.a.v * hImage * scale) / h,
+            u: (x + image.a.u * wImage * mainScale) / w,
+            v: (y + image.a.v * hImage * mainScale) / h,
         },
         b: {
-            u: (x + image.b.u * wImage * scale) / w,
-            v: (y + image.b.v * hImage * scale) / h,
+            u: (x + image.b.u * wImage * mainScale) / w,
+            v: (y + image.b.v * hImage * mainScale) / h,
         },
     };
 
-    return mainPosition;
+    return { mainPosition, mainScale };
 }
 
-function drawPosition(c: DrawingContext, position: RelativePosition) {
+export function drawPosition(c: DrawingContext, position: RelativePosition) {
     drawPoint(c, position.a);
     drawPoint(c, position.b);
 }
 
-function drawPoint(c: DrawingContext, point: RelativePoint) {
+export function drawPoint(c: DrawingContext, point: RelativePoint, color = '#00FF00', radius = 16) {
     const ctx = c.context;
     const w = c.width;
     const h = c.height;
 
-    const color = '#00FF00';
-    const radius = 16;
     const thickness = 2;
 
     const u = point.u;
@@ -190,7 +187,7 @@ function drawImageAligned(c: DrawingContext, image: ImagePosition, position: Rel
 
 }
 
-function getDistance(position: RelativePosition): number {
+export function getDistance(position: RelativePosition): number {
     const uDelta = position.a.u - position.b.u;
     const vDelta = position.a.v - position.b.v;
     return Math.sqrt(uDelta * uDelta + vDelta * vDelta);

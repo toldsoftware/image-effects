@@ -1,4 +1,4 @@
-import * as S from '../src';
+import * as S from '../src/index';
 
 export function test() {
     console.log('test START');
@@ -82,7 +82,7 @@ function addTest(product: any, user: any, moveHandleRadius = 0.25, shouldMovePro
         userImageHandles: user.userImageHandles,
         productImageUrl: product.productImageUrl,
         productImageHandles: product.productImageHandles,
-        shouldMoveProductHandles,
+        // shouldMoveProductHandles,
         moveHandleRadius
     });
 }

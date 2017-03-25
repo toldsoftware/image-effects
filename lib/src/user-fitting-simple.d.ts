@@ -12,7 +12,8 @@ export interface ImageHandle {
     kind?: ImageHandleKind;
 }
 export interface ImageHandles {
-    [key: string]: ImageHandle;
+    left_temple: ImageHandle;
+    right_temple: ImageHandle;
 }
 export interface UserFittingOptions {
     host: HTMLDivElement;
@@ -20,27 +21,7 @@ export interface UserFittingOptions {
     userImageHandles: ImageHandles;
     productImageUrl: string;
     productImageHandles: ImageHandles;
-    shouldMoveProductHandles?: boolean;
     moveHandleRadius?: number;
-}
-export interface Rect {
-    y_top: number;
-    y_bottom: number;
-    x_left: number;
-    x_right: number;
-}
-export interface SkewRect {
-    y_top_left: number;
-    y_bottom_left: number;
-    y_top_right: number;
-    y_bottom_right: number;
-    x_bottom_left: number;
-    x_bottom_right: number;
-    x_top_left: number;
-    x_top_right: number;
-}
-export interface TransformCell {
-    source: Rect;
-    target: SkewRect;
+    isReadonly?: boolean;
 }
 export declare function setupUserFitting(options: UserFittingOptions): void;
