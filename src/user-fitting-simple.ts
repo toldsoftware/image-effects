@@ -104,6 +104,10 @@ export function setupUserFitting(options: UserFittingOptions) {
 
         return result;
     });
+
+    return {
+        refresh
+    };
 }
 
 
