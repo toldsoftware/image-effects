@@ -505,9 +505,9 @@
 	    };
 	}
 	function handleUserInput(c, onChange) {
+	    var MOVEMENT_RATIO = 0.5;
 	    var MAX_DRAG_RATIO = 0.25;
 	    var TIME_REMOVE_HANDLES = 3000;
-	    var MOVEMENT_RATIO = 1;
 	    var lastActualPosition = null;
 	    var isDraggingWhole = false;
 	    var isDraggingPoint = false;
@@ -516,6 +516,7 @@
 	    var shouldDrawHandles = false;
 	    var removeHandlesTimeoutId = null;
 	    var dragStart = function (e) {
+	        console.log('dragStart');
 	        if (!lastActualPosition) {
 	            lastActualPosition = onChange(shouldDrawHandles, null);
 	        }
@@ -552,10 +553,12 @@
 	        onChange(shouldDrawHandles, null);
 	    };
 	    var dragEnd = function () {
+	        console.log('dragEnd');
 	        unsubscribe();
 	        isDraggingPoint = isDraggingWhole = false;
 	    };
 	    var dragMove = function (e) {
+	        console.log('dragMove');
 	        if (!isDraggingPoint && !isDraggingWhole) {
 	            return;
 	        }
@@ -599,23 +602,22 @@
 	        removeHandles();
 	        e.preventDefault();
 	        e.stopPropagation();
+	        e.stopImmediatePropagation();
 	        return false;
 	    };
 	    c.canvas.addEventListener('mousedown', dragStart);
 	    c.canvas.addEventListener('touchstart', dragStart);
+	    c.canvas.addEventListener('touchend', dragEnd);
+	    c.canvas.addEventListener('touchmove', dragMove);
 	    var subscribe = function () {
 	        // console.log('subscribe');
-	        window.addEventListener('mouseup', dragEnd);
-	        window.addEventListener('touchend', dragEnd);
-	        window.addEventListener('mousemove', dragMove);
-	        window.addEventListener('touchmove', dragMove, { passive: false });
+	        document.addEventListener('mouseup', dragEnd);
+	        document.addEventListener('mousemove', dragMove);
 	    };
 	    var unsubscribe = function () {
 	        // console.log('unsubscribe');
-	        window.removeEventListener('mouseup', dragEnd);
-	        window.removeEventListener('touchend', dragEnd);
-	        window.removeEventListener('mousemove', dragMove);
-	        window.removeEventListener('touchmove', dragMove);
+	        document.removeEventListener('mouseup', dragEnd);
+	        document.removeEventListener('mousemove', dragMove);
 	    };
 	}
 	function getPointInfo(e, c, points) {

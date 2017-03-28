@@ -116,9 +116,10 @@ function toSimpleImageInfo(image: HTMLImageElement | HTMLCanvasElement, imageHan
 
 function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolean, positionChange: RelativePosition) => RelativePosition) {
 
+    const MOVEMENT_RATIO = 0.5;
+
     const MAX_DRAG_RATIO = 0.25;
     const TIME_REMOVE_HANDLES = 3000;
-    const MOVEMENT_RATIO = 1;
 
     let lastActualPosition: RelativePosition = null;
     let isDraggingWhole = false;
@@ -131,6 +132,8 @@ function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolea
     let removeHandlesTimeoutId: number = null;
 
     const dragStart = (e: MouseEvent | TouchEvent) => {
+        console.log('dragStart');
+
         if (!lastActualPosition) { lastActualPosition = onChange(shouldDrawHandles, null); }
         if (!lastActualPosition) { return; }
 
@@ -170,11 +173,15 @@ function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolea
     };
 
     const dragEnd = () => {
+        console.log('dragEnd');
+
         unsubscribe();
         isDraggingPoint = isDraggingWhole = false;
     };
 
     const dragMove = (e: MouseEvent | TouchEvent) => {
+        console.log('dragMove');
+
         if (!isDraggingPoint && !isDraggingWhole) { return; }
 
         shouldDrawHandles = true;
@@ -222,28 +229,25 @@ function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolea
 
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         return false;
     };
 
     c.canvas.addEventListener('mousedown', dragStart);
     c.canvas.addEventListener('touchstart', dragStart);
+    c.canvas.addEventListener('touchend', dragEnd);
+    c.canvas.addEventListener('touchmove', dragMove);
 
     const subscribe = () => {
         // console.log('subscribe');
-
-        window.addEventListener('mouseup', dragEnd);
-        window.addEventListener('touchend', dragEnd);
-        window.addEventListener('mousemove', dragMove);
-        window.addEventListener('touchmove', dragMove, { passive: false } as any);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('mousemove', dragMove);
     };
 
     const unsubscribe = () => {
         // console.log('unsubscribe');
-
-        window.removeEventListener('mouseup', dragEnd);
-        window.removeEventListener('touchend', dragEnd);
-        window.removeEventListener('mousemove', dragMove);
-        window.removeEventListener('touchmove', dragMove);
+        document.removeEventListener('mouseup', dragEnd);
+        document.removeEventListener('mousemove', dragMove);
     };
 }
 
