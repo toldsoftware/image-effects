@@ -23,5 +23,17 @@ export interface UserFittingOptions {
     productImageHandles: ImageHandles;
     moveHandleRadius?: number;
     isReadonly?: boolean;
+    onMove?: () => void;
 }
-export declare function setupUserFitting(options: UserFittingOptions): void;
+export declare function setupUserFitting(options: UserFittingOptions): {
+    refresh: () => {
+        a: {
+            u: number;
+            v: number;
+        };
+        b: {
+            u: number;
+            v: number;
+        };
+    };
+};
