@@ -30,6 +30,7 @@ export interface UserFittingOptions {
     productImageHandles: ImageHandles;
     moveHandleRadius?: number;
     isReadonly?: boolean;
+    onMove?: () => void;
 }
 
 export function setupUserFitting(options: UserFittingOptions) {
@@ -95,6 +96,10 @@ export function setupUserFitting(options: UserFittingOptions) {
         if (DEBUG && positionChange) {
             drawPoint(c, { u: 0.5 + positionChange.a.u, v: 0.5 + positionChange.a.v }, '#0000FF');
             drawPoint(c, { u: 0.5 + positionChange.b.u, v: 0.5 + positionChange.b.v }, '#0000FF');
+        }
+
+        if (options.onMove) {
+            options.onMove();
         }
 
         return result;
