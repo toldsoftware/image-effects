@@ -71,39 +71,39 @@ export function setupUserFitting(options: UserFittingOptions) {
     refresh();
 
     // Handle User Input
-    if (options.isReadonly) { return; }
+    if (!options.isReadonly) {
+        handleUserInput(c, (drawHandles, positionChange) => {
+            shouldDrawHandles = drawHandles;
 
-    handleUserInput(c, (drawHandles, positionChange) => {
-        shouldDrawHandles = drawHandles;
+            console.log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
 
-        console.log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
+            if (!positionChange) {
+                options.userImageHandles.left_temple.x_start = options.userImageHandles.left_temple.x;
+                options.userImageHandles.left_temple.y_start = options.userImageHandles.left_temple.y;
+                options.userImageHandles.right_temple.x_start = options.userImageHandles.right_temple.x;
+                options.userImageHandles.right_temple.y_start = options.userImageHandles.right_temple.y;
+            } else {
 
-        if (!positionChange) {
-            options.userImageHandles.left_temple.x_start = options.userImageHandles.left_temple.x;
-            options.userImageHandles.left_temple.y_start = options.userImageHandles.left_temple.y;
-            options.userImageHandles.right_temple.x_start = options.userImageHandles.right_temple.x;
-            options.userImageHandles.right_temple.y_start = options.userImageHandles.right_temple.y;
-        } else {
+                options.userImageHandles.left_temple.x = options.userImageHandles.left_temple.x_start + positionChange.a.u; // * (userImage.width / c.width);
+                options.userImageHandles.left_temple.y = options.userImageHandles.left_temple.y_start + positionChange.a.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
+                options.userImageHandles.right_temple.x = options.userImageHandles.right_temple.x_start + positionChange.b.u; // * (userImage.width / c.width);
+                options.userImageHandles.right_temple.y = options.userImageHandles.right_temple.y_start + positionChange.b.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
+            }
 
-            options.userImageHandles.left_temple.x = options.userImageHandles.left_temple.x_start + positionChange.a.u; // * (userImage.width / c.width);
-            options.userImageHandles.left_temple.y = options.userImageHandles.left_temple.y_start + positionChange.a.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
-            options.userImageHandles.right_temple.x = options.userImageHandles.right_temple.x_start + positionChange.b.u; // * (userImage.width / c.width);
-            options.userImageHandles.right_temple.y = options.userImageHandles.right_temple.y_start + positionChange.b.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
-        }
+            const result = refresh();
 
-        const result = refresh();
+            if (DEBUG && positionChange) {
+                drawPoint(c, { u: 0.5 + positionChange.a.u, v: 0.5 + positionChange.a.v }, '#0000FF');
+                drawPoint(c, { u: 0.5 + positionChange.b.u, v: 0.5 + positionChange.b.v }, '#0000FF');
+            }
 
-        if (DEBUG && positionChange) {
-            drawPoint(c, { u: 0.5 + positionChange.a.u, v: 0.5 + positionChange.a.v }, '#0000FF');
-            drawPoint(c, { u: 0.5 + positionChange.b.u, v: 0.5 + positionChange.b.v }, '#0000FF');
-        }
+            if (options.onMove) {
+                options.onMove();
+            }
 
-        if (options.onMove) {
-            options.onMove();
-        }
-
-        return result;
-    });
+            return result;
+        });
+    }
 
     return {
         refresh
