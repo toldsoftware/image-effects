@@ -439,60 +439,107 @@
 	})(ImageHandleKind = exports.ImageHandleKind || (exports.ImageHandleKind = {}));
 	function setupUserFitting(options) {
 	    var c = new drawing_buffer_1.DrawingBuffer(options.host.clientWidth || 600, options.host.clientHeight || 600);
-	    options.host.appendChild(c.canvas);
+	    var divContainer = document.createElement('div');
+	    divContainer.style.position = 'relative';
+	    divContainer.appendChild(c.canvas);
+	    options.host.appendChild(divContainer);
 	    c.canvas.style.width = '100%';
+	    var divLoading = document.createElement('div');
+	    divLoading.style.position = 'absolute';
+	    divLoading.style.left = '0';
+	    divLoading.style.right = '0';
+	    divLoading.style.top = '0';
+	    divLoading.style.bottom = '0';
+	    divLoading.style.backgroundColor = '#000000';
+	    divLoading.style.opacity = '0.2';
+	    divContainer.appendChild(divLoading);
+	    var removeIsLoading = function () {
+	        if (!divLoading) {
+	            return;
+	        }
+	        divContainer.removeChild(divLoading);
+	        divLoading = null;
+	        console.log('removeIsLoading');
+	    };
 	    // Load Images
+	    var isUserImageLoaded = false;
+	    var isProductImageLoaded = false;
 	    var userImage = new Image();
 	    userImage.onload = function () {
+	        isUserImageLoaded = true;
 	        refresh();
 	    };
 	    userImage.src = options.userImageUrl;
+	    // isUserImageLoaded = userImage.width > 0;
 	    var productImage = new Image();
 	    productImage.onload = function () {
+	        isProductImageLoaded = true;
 	        refresh();
 	    };
 	    productImage.src = options.productImageUrl;
+	    // isProductImageLoaded = productImage.width > 0;
 	    // Input Vars
 	    var shouldDrawHandles = false;
 	    var lastActualScale = 1;
 	    // Draw
+	    var refreshTimeoutId = 0;
 	    var refresh = function () {
-	        if (!userImage.width || !productImage.width) {
-	            setTimeout(refresh, 250);
+	        // if (!userImage.width || !productImage.width) {
+	        if (!isUserImageLoaded || !isProductImageLoaded) {
+	            clearTimeout(refreshTimeoutId);
+	            refreshTimeoutId = setTimeout(refresh, 250);
 	            return;
 	        }
+	        console.log('refresh', userImage.width, productImage.width);
 	        c.context.clearRect(0, 0, options.host.clientWidth, options.host.clientHeight);
 	        var actual = draw_images_aligned_1.drawImagesAligned(c, [toSimpleImageInfo(userImage, options.userImageHandles), toSimpleImageInfo(productImage, options.productImageHandles)], shouldDrawHandles);
 	        lastActualScale = actual.actualScale;
+	        if (isUserImageLoaded && isProductImageLoaded) {
+	            setTimeout(function () {
+	                removeIsLoading();
+	                setupUserInput();
+	            }, 0);
+	        }
+	        else {
+	            clearTimeout(refreshTimeoutId);
+	            refreshTimeoutId = setTimeout(refresh, 250);
+	        }
 	        return actual.actualPosition;
 	    };
 	    refresh();
 	    // Handle User Input
-	    if (options.isReadonly) {
-	        return;
-	    }
-	    handleUserInput(c, function (drawHandles, positionChange) {
-	        shouldDrawHandles = drawHandles;
-	        console.log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
-	        if (!positionChange) {
-	            options.userImageHandles.left_temple.x_start = options.userImageHandles.left_temple.x;
-	            options.userImageHandles.left_temple.y_start = options.userImageHandles.left_temple.y;
-	            options.userImageHandles.right_temple.x_start = options.userImageHandles.right_temple.x;
-	            options.userImageHandles.right_temple.y_start = options.userImageHandles.right_temple.y;
+	    var setupUserInput = function () {
+	        if (!options.isReadonly) {
+	            handleUserInput(c, function (drawHandles, positionChange) {
+	                shouldDrawHandles = drawHandles;
+	                console.log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
+	                if (!positionChange) {
+	                    options.userImageHandles.left_temple.x_start = options.userImageHandles.left_temple.x;
+	                    options.userImageHandles.left_temple.y_start = options.userImageHandles.left_temple.y;
+	                    options.userImageHandles.right_temple.x_start = options.userImageHandles.right_temple.x;
+	                    options.userImageHandles.right_temple.y_start = options.userImageHandles.right_temple.y;
+	                }
+	                else {
+	                    options.userImageHandles.left_temple.x = options.userImageHandles.left_temple.x_start + positionChange.a.u; // * (userImage.width / c.width);
+	                    options.userImageHandles.left_temple.y = options.userImageHandles.left_temple.y_start + positionChange.a.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
+	                    options.userImageHandles.right_temple.x = options.userImageHandles.right_temple.x_start + positionChange.b.u; // * (userImage.width / c.width);
+	                    options.userImageHandles.right_temple.y = options.userImageHandles.right_temple.y_start + positionChange.b.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
+	                }
+	                var result = refresh();
+	                if (DEBUG && positionChange) {
+	                    draw_images_aligned_1.drawPoint(c, { u: 0.5 + positionChange.a.u, v: 0.5 + positionChange.a.v }, '#0000FF');
+	                    draw_images_aligned_1.drawPoint(c, { u: 0.5 + positionChange.b.u, v: 0.5 + positionChange.b.v }, '#0000FF');
+	                }
+	                if (options.onMove) {
+	                    options.onMove();
+	                }
+	                return result;
+	            });
 	        }
-	        else {
-	            options.userImageHandles.left_temple.x = options.userImageHandles.left_temple.x_start + positionChange.a.u; // * (userImage.width / c.width);
-	            options.userImageHandles.left_temple.y = options.userImageHandles.left_temple.y_start + positionChange.a.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
-	            options.userImageHandles.right_temple.x = options.userImageHandles.right_temple.x_start + positionChange.b.u; // * (userImage.width / c.width);
-	            options.userImageHandles.right_temple.y = options.userImageHandles.right_temple.y_start + positionChange.b.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
-	        }
-	        var result = refresh();
-	        if (DEBUG && positionChange) {
-	            draw_images_aligned_1.drawPoint(c, { u: 0.5 + positionChange.a.u, v: 0.5 + positionChange.a.v }, '#0000FF');
-	            draw_images_aligned_1.drawPoint(c, { u: 0.5 + positionChange.b.u, v: 0.5 + positionChange.b.v }, '#0000FF');
-	        }
-	        return result;
-	    });
+	    };
+	    return {
+	        refresh: refresh
+	    };
 	}
 	exports.setupUserFitting = setupUserFitting;
 	function toSimpleImageInfo(image, imageHandles) {
