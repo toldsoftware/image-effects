@@ -1,6 +1,6 @@
 {
   "name": "@told/image-effects",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "Image Effects",
   "main": "index.ts",
   "scripts": {
