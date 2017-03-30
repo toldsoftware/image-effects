@@ -1,7 +1,8 @@
 import { DrawingContext, DrawingBuffer } from './drawing-buffer';
 import { drawImagesAligned, RelativePosition, RelativePoint, ImagePosition, getDistance, drawPoint } from './draw-images-aligned';
 
-const DEBUG = false;
+const DEBUG_DETAILS = false;
+const DEBUG_LOG = true;
 
 export enum ImageHandleKind {
     Stretch,
@@ -33,8 +34,16 @@ export interface UserFittingOptions {
     onMove?: () => void;
 }
 
+let _nextId = 0;
+
 export function setupUserFitting(options: UserFittingOptions) {
     let c = new DrawingBuffer(options.host.clientWidth || 600, options.host.clientHeight || 600);
+
+    const id = _nextId++;
+    function log(...args: any[]) {
+        if (!DEBUG_LOG) { return; }
+        console.log(`[${id}]`, ...args);
+    };
 
     const divContainer = document.createElement('div');
     divContainer.style.position = 'relative';
@@ -58,7 +67,7 @@ export function setupUserFitting(options: UserFittingOptions) {
         if (!divLoading) { return; }
         divContainer.removeChild(divLoading);
         divLoading = null;
-        console.log('removeIsLoading');
+        log('removeIsLoading');
     };
 
     // Load Images
@@ -95,7 +104,7 @@ export function setupUserFitting(options: UserFittingOptions) {
             return;
         }
 
-        console.log('refresh', userImage.width, productImage.width);
+        log('refresh', userImage.width, productImage.width);
 
         c.context.clearRect(0, 0, options.host.clientWidth, options.host.clientHeight);
         const actual = drawImagesAligned(c, [toSimpleImageInfo(userImage, options.userImageHandles), toSimpleImageInfo(productImage, options.productImageHandles)], shouldDrawHandles);
@@ -118,10 +127,10 @@ export function setupUserFitting(options: UserFittingOptions) {
     // Handle User Input
     const setupUserInput = () => {
         if (!options.isReadonly) {
-            handleUserInput(c, (drawHandles, positionChange) => {
+            handleUserInput(c, log, (drawHandles, positionChange) => {
                 shouldDrawHandles = drawHandles;
 
-                console.log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
+                log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
 
                 if (!positionChange) {
                     options.userImageHandles.left_temple.x_start = options.userImageHandles.left_temple.x;
@@ -138,7 +147,7 @@ export function setupUserFitting(options: UserFittingOptions) {
 
                 const result = refresh();
 
-                if (DEBUG && positionChange) {
+                if (DEBUG_DETAILS && positionChange) {
                     drawPoint(c, { u: 0.5 + positionChange.a.u, v: 0.5 + positionChange.a.v }, '#0000FF');
                     drawPoint(c, { u: 0.5 + positionChange.b.u, v: 0.5 + positionChange.b.v }, '#0000FF');
                 }
@@ -170,7 +179,7 @@ function toSimpleImageInfo(image: HTMLImageElement | HTMLCanvasElement, imageHan
 }
 
 
-function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolean, positionChange: RelativePosition) => RelativePosition) {
+function handleUserInput(c: DrawingContext, log: (...args: any[]) => void, onChange: (shouldDrawHandles: boolean, positionChange: RelativePosition) => RelativePosition) {
 
     const MOVEMENT_RATIO = 0.5;
 
@@ -188,7 +197,7 @@ function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolea
     let removeHandlesTimeoutId: number = null;
 
     const dragStart = (e: MouseEvent | TouchEvent) => {
-        console.log('dragStart');
+        log('dragStart');
 
         if (!lastActualPosition) { lastActualPosition = onChange(shouldDrawHandles, null); }
         if (!lastActualPosition) { return; }
@@ -197,7 +206,7 @@ function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolea
         start = getPointInfo(e, c, [startPosition.a, startPosition.b]);
         shouldDrawHandles = true;
 
-        // console.log('dragStart', e, lastActual, start);
+        // log('dragStart', e, lastActual, start);
 
         const nearest = start.nearest;
         if (!nearest) { return; }
@@ -214,29 +223,29 @@ function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolea
             isDraggingWhole = true;
         }
 
-        if (DEBUG) {
+        if (DEBUG_DETAILS) {
             setTimeout(() => {
-                console.log('dragStart distance', distance);
+                log('dragStart distance', distance);
                 drawPoint(c, start, '#FF0000', c.width * Math.sqrt(nearest.distanceSq));
                 drawPoint(c, start, '#FFFF00', c.width * Math.sqrt(maxMovePointDistanceSq));
                 drawPoint(c, start, '#FF00FF', c.width * Math.sqrt(maxMoveWholeDistanceSq));
             }, 10);
 
-            console.log('dragStart', isDraggingPoint, isDraggingWhole, nearest.distanceSq, maxMovePointDistanceSq, maxMoveWholeDistanceSq, e, lastActualPosition, start);
+            log('dragStart', isDraggingPoint, isDraggingWhole, nearest.distanceSq, maxMovePointDistanceSq, maxMoveWholeDistanceSq, e, lastActualPosition, start);
         }
 
         onChange(shouldDrawHandles, null);
     };
 
     const dragEnd = () => {
-        console.log('dragEnd');
+        log('dragEnd');
 
         unsubscribe();
         isDraggingPoint = isDraggingWhole = false;
     };
 
     const dragMove = (e: MouseEvent | TouchEvent) => {
-        console.log('dragMove');
+        log('dragMove');
 
         if (!isDraggingPoint && !isDraggingWhole) { return; }
 
@@ -295,13 +304,13 @@ function handleUserInput(c: DrawingContext, onChange: (shouldDrawHandles: boolea
     c.canvas.addEventListener('touchmove', dragMove);
 
     const subscribe = () => {
-        // console.log('subscribe');
+        // log('subscribe');
         document.addEventListener('mouseup', dragEnd);
         document.addEventListener('mousemove', dragMove);
     };
 
     const unsubscribe = () => {
-        // console.log('unsubscribe');
+        // log('unsubscribe');
         document.removeEventListener('mouseup', dragEnd);
         document.removeEventListener('mousemove', dragMove);
     };
@@ -344,7 +353,7 @@ function getPointInfo(e: MouseEvent | TouchEvent, c: DrawingContext, points: Rel
 
 
     // DEBUG
-    if (DEBUG) {
+    if (DEBUG_DETAILS) {
         for (let p of points) {
             drawPoint(c, p, '#FFFF00', 4);
         }

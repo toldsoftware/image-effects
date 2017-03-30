@@ -430,15 +430,29 @@
 	"use strict";
 	var drawing_buffer_1 = __webpack_require__(3);
 	var draw_images_aligned_1 = __webpack_require__(4);
-	var DEBUG = false;
+	var DEBUG_DETAILS = false;
+	var DEBUG_LOG = true;
 	var ImageHandleKind;
 	(function (ImageHandleKind) {
 	    ImageHandleKind[ImageHandleKind["Stretch"] = 0] = "Stretch";
 	    ImageHandleKind[ImageHandleKind["RotateAndScale"] = 1] = "RotateAndScale";
 	    ImageHandleKind[ImageHandleKind["Anchor"] = 2] = "Anchor";
 	})(ImageHandleKind = exports.ImageHandleKind || (exports.ImageHandleKind = {}));
+	var _nextId = 0;
 	function setupUserFitting(options) {
 	    var c = new drawing_buffer_1.DrawingBuffer(options.host.clientWidth || 600, options.host.clientHeight || 600);
+	    var id = _nextId++;
+	    function log() {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i] = arguments[_i];
+	        }
+	        if (!DEBUG_LOG) {
+	            return;
+	        }
+	        console.log.apply(console, ["[" + id + "]"].concat(args));
+	    }
+	    ;
 	    var divContainer = document.createElement('div');
 	    divContainer.style.position = 'relative';
 	    divContainer.appendChild(c.canvas);
@@ -459,7 +473,7 @@
 	        }
 	        divContainer.removeChild(divLoading);
 	        divLoading = null;
-	        console.log('removeIsLoading');
+	        log('removeIsLoading');
 	    };
 	    // Load Images
 	    var isUserImageLoaded = false;
@@ -490,7 +504,7 @@
 	            refreshTimeoutId = setTimeout(refresh, 250);
 	            return;
 	        }
-	        console.log('refresh', userImage.width, productImage.width);
+	        log('refresh', userImage.width, productImage.width);
 	        c.context.clearRect(0, 0, options.host.clientWidth, options.host.clientHeight);
 	        var actual = draw_images_aligned_1.drawImagesAligned(c, [toSimpleImageInfo(userImage, options.userImageHandles), toSimpleImageInfo(productImage, options.productImageHandles)], shouldDrawHandles);
 	        lastActualScale = actual.actualScale;
@@ -510,9 +524,9 @@
 	    // Handle User Input
 	    var setupUserInput = function () {
 	        if (!options.isReadonly) {
-	            handleUserInput(c, function (drawHandles, positionChange) {
+	            handleUserInput(c, log, function (drawHandles, positionChange) {
 	                shouldDrawHandles = drawHandles;
-	                console.log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
+	                log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
 	                if (!positionChange) {
 	                    options.userImageHandles.left_temple.x_start = options.userImageHandles.left_temple.x;
 	                    options.userImageHandles.left_temple.y_start = options.userImageHandles.left_temple.y;
@@ -526,7 +540,7 @@
 	                    options.userImageHandles.right_temple.y = options.userImageHandles.right_temple.y_start + positionChange.b.v * (userImage.width / userImage.height); // * (userImage.height / c.height);
 	                }
 	                var result = refresh();
-	                if (DEBUG && positionChange) {
+	                if (DEBUG_DETAILS && positionChange) {
 	                    draw_images_aligned_1.drawPoint(c, { u: 0.5 + positionChange.a.u, v: 0.5 + positionChange.a.v }, '#0000FF');
 	                    draw_images_aligned_1.drawPoint(c, { u: 0.5 + positionChange.b.u, v: 0.5 + positionChange.b.v }, '#0000FF');
 	                }
@@ -551,7 +565,7 @@
 	        b: { u: bHandle.x, v: bHandle.y },
 	    };
 	}
-	function handleUserInput(c, onChange) {
+	function handleUserInput(c, log, onChange) {
 	    var MOVEMENT_RATIO = 0.5;
 	    var MAX_DRAG_RATIO = 0.25;
 	    var TIME_REMOVE_HANDLES = 3000;
@@ -563,7 +577,7 @@
 	    var shouldDrawHandles = false;
 	    var removeHandlesTimeoutId = null;
 	    var dragStart = function (e) {
-	        console.log('dragStart');
+	        log('dragStart');
 	        if (!lastActualPosition) {
 	            lastActualPosition = onChange(shouldDrawHandles, null);
 	        }
@@ -573,7 +587,7 @@
 	        startPosition = lastActualPosition;
 	        start = getPointInfo(e, c, [startPosition.a, startPosition.b]);
 	        shouldDrawHandles = true;
-	        // console.log('dragStart', e, lastActual, start);
+	        // log('dragStart', e, lastActual, start);
 	        var nearest = start.nearest;
 	        if (!nearest) {
 	            return;
@@ -588,24 +602,24 @@
 	        else if (nearest.distanceSq < maxMoveWholeDistanceSq) {
 	            isDraggingWhole = true;
 	        }
-	        if (DEBUG) {
+	        if (DEBUG_DETAILS) {
 	            setTimeout(function () {
-	                console.log('dragStart distance', distance);
+	                log('dragStart distance', distance);
 	                draw_images_aligned_1.drawPoint(c, start, '#FF0000', c.width * Math.sqrt(nearest.distanceSq));
 	                draw_images_aligned_1.drawPoint(c, start, '#FFFF00', c.width * Math.sqrt(maxMovePointDistanceSq));
 	                draw_images_aligned_1.drawPoint(c, start, '#FF00FF', c.width * Math.sqrt(maxMoveWholeDistanceSq));
 	            }, 10);
-	            console.log('dragStart', isDraggingPoint, isDraggingWhole, nearest.distanceSq, maxMovePointDistanceSq, maxMoveWholeDistanceSq, e, lastActualPosition, start);
+	            log('dragStart', isDraggingPoint, isDraggingWhole, nearest.distanceSq, maxMovePointDistanceSq, maxMoveWholeDistanceSq, e, lastActualPosition, start);
 	        }
 	        onChange(shouldDrawHandles, null);
 	    };
 	    var dragEnd = function () {
-	        console.log('dragEnd');
+	        log('dragEnd');
 	        unsubscribe();
 	        isDraggingPoint = isDraggingWhole = false;
 	    };
 	    var dragMove = function (e) {
-	        console.log('dragMove');
+	        log('dragMove');
 	        if (!isDraggingPoint && !isDraggingWhole) {
 	            return;
 	        }
@@ -657,12 +671,12 @@
 	    c.canvas.addEventListener('touchend', dragEnd);
 	    c.canvas.addEventListener('touchmove', dragMove);
 	    var subscribe = function () {
-	        // console.log('subscribe');
+	        // log('subscribe');
 	        document.addEventListener('mouseup', dragEnd);
 	        document.addEventListener('mousemove', dragMove);
 	    };
 	    var unsubscribe = function () {
-	        // console.log('unsubscribe');
+	        // log('unsubscribe');
 	        document.removeEventListener('mouseup', dragEnd);
 	        document.removeEventListener('mousemove', dragMove);
 	    };
@@ -697,7 +711,7 @@
 	    var nearest = !points || !points.length ? null
 	        : points.map(function (p, i) { return ({ point: p, index: i, distanceSq: (p.u - u) * (p.u - u) + (p.v - v) * (p.v - v) }); }).sort(function (a, b) { return a.distanceSq - b.distanceSq; })[0];
 	    // DEBUG
-	    if (DEBUG) {
+	    if (DEBUG_DETAILS) {
 	        for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
 	            var p = points_1[_i];
 	            draw_images_aligned_1.drawPoint(c, p, '#FFFF00', 4);
