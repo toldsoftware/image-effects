@@ -522,9 +522,14 @@
 	    };
 	    refresh();
 	    // Handle User Input
+	    var hasSetup = false;
 	    var setupUserInput = function () {
+	        if (hasSetup) {
+	            return;
+	        }
+	        hasSetup = true;
 	        if (!options.isReadonly) {
-	            handleUserInput(c, log, function (drawHandles, positionChange) {
+	            setupUserInput_inner(c, log, function (drawHandles, positionChange) {
 	                shouldDrawHandles = drawHandles;
 	                log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
 	                if (!positionChange) {
@@ -565,7 +570,7 @@
 	        b: { u: bHandle.x, v: bHandle.y },
 	    };
 	}
-	function handleUserInput(c, log, onChange) {
+	function setupUserInput_inner(c, log, onChange) {
 	    var MOVEMENT_RATIO = 0.5;
 	    var MAX_DRAG_RATIO = 0.25;
 	    var TIME_REMOVE_HANDLES = 3000;

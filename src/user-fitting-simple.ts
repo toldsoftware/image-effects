@@ -125,9 +125,13 @@ export function setupUserFitting(options: UserFittingOptions) {
     refresh();
 
     // Handle User Input
+    let hasSetup = false;
     const setupUserInput = () => {
+        if (hasSetup) { return; }
+
+        hasSetup = true;
         if (!options.isReadonly) {
-            handleUserInput(c, log, (drawHandles, positionChange) => {
+            setupUserInput_inner(c, log, (drawHandles, positionChange) => {
                 shouldDrawHandles = drawHandles;
 
                 log('positionChange', positionChange, lastActualScale, userImage.width, c.width, userImage.height, c.height);
@@ -179,7 +183,7 @@ function toSimpleImageInfo(image: HTMLImageElement | HTMLCanvasElement, imageHan
 }
 
 
-function handleUserInput(c: DrawingContext, log: (...args: any[]) => void, onChange: (shouldDrawHandles: boolean, positionChange: RelativePosition) => RelativePosition) {
+function setupUserInput_inner(c: DrawingContext, log: (...args: any[]) => void, onChange: (shouldDrawHandles: boolean, positionChange: RelativePosition) => RelativePosition) {
 
     const MOVEMENT_RATIO = 0.5;
 
